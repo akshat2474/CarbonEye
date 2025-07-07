@@ -1,0 +1,50 @@
+import { Button } from "@/components/ui/button";
+import heroImage from "@/assets/hero-satellite-bg.jpg";
+
+interface HeroSectionProps {
+  onCtaClick: () => void;
+}
+
+const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0">
+        <img 
+          src={heroImage} 
+          alt="Satellite view of Earth" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-hero" />
+      </div>
+      
+      {/* Content */}
+      <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
+          Real-Time Deforestation Alerts, Powered by MRV-Grade AI
+        </h1>
+        
+        <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">
+          Pick any country. See forest loss in the last 5–10 days.
+        </p>
+        
+        <Button 
+          onClick={onCtaClick}
+          size="lg"
+          className="text-lg px-8 py-6 bg-gradient-primary hover:shadow-glow transition-all duration-300"
+        >
+          Try Carbon Eye
+        </Button>
+      </div>
+      
+      {/* Scroll Indicator */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <div className="w-6 h-10 border-2 border-primary rounded-full flex justify-center">
+          <div className="w-1 h-3 bg-primary rounded-full mt-2 animate-pulse" />
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default HeroSection;
