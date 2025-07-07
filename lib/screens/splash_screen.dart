@@ -75,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
               builder: (context, child) {
                 return CustomPaint(
                   painter: _SatelliteSweepPainter(sweepProgress: _sweepAnimation.value),
-                  child: SizedBox(
+                  child: const SizedBox(
                     width: 300,
                     height: 200,
                   ),
