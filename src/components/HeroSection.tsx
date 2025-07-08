@@ -7,7 +7,7 @@ interface HeroSectionProps {
 
 const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img 
@@ -20,7 +20,7 @@ const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
       
       {/* Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
           Real-Time Deforestation Alerts, Powered by MRV-Grade AI
         </h1>
         
@@ -31,17 +31,15 @@ const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
         <Button 
           onClick={onCtaClick}
           size="lg"
-          className="text-lg px-8 py-6 bg-gradient-primary hover:shadow-glow transition-all duration-300"
+          className="text-lg px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300"
         >
           Try Carbon Eye
         </Button>
       </div>
       
-      {/* Scroll Indicator */}
+      {/* White Arrow Indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-primary rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-primary rounded-full mt-2 animate-pulse" />
-        </div>
+        <div className="w-0 h-0 border-l-4 border-r-4 border-t-8 border-transparent border-t-white" />
       </div>
     </section>
   );

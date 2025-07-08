@@ -2,48 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Carbon Eye Design System - Modern satellite/environmental aesthetic */
+/* Carbon Eye Design System - Clean minimalistic black and green */
 
 @layer base {
   :root {
-    /* Dark space theme with green environmental accents */
-    --background: 220 27% 8%;
-    --foreground: 210 40% 98%;
+    /* Clean black background with bright green accents */
+    --background: 0 0% 3%;
+    --foreground: 0 0% 100%;
 
-    --card: 220 27% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 220 27% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 142 76% 36%;
-    --primary-foreground: 220 27% 8%;
+    --primary: 142 100% 40%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 220 27% 15%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 27% 15%;
-    --muted-foreground: 215.4 16.3% 65%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 142 76% 36%;
-    --accent-foreground: 220 27% 8%;
+    --accent: 142 100% 40%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 27% 20%;
-    --input: 220 27% 15%;
-    --ring: 142 76% 36%;
+    --border: 0 0% 15%;
+    --input: 0 0% 8%;
+    --ring: 142 100% 40%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* Custom design tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 50%));
-    --gradient-hero: linear-gradient(180deg, hsl(220 27% 8% / 0.9), hsl(220 27% 8% / 0.7));
-    --gradient-card: linear-gradient(135deg, hsl(220 27% 10% / 0.8), hsl(220 27% 15% / 0.6));
-    --shadow-glow: 0 0 40px hsl(142 76% 36% / 0.3);
-    --shadow-card: 0 20px 60px hsl(220 27% 5% / 0.5);
-    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --gradient-primary: linear-gradient(135deg, hsl(142 100% 40%), hsl(142 100% 50%));
+    --gradient-hero: linear-gradient(180deg, hsl(0 0% 3% / 0.9), hsl(0 0% 3% / 0.8));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 5% / 0.8), hsl(0 0% 8% / 0.6));
+    --shadow-glow: 0 0 30px hsl(142 100% 40% / 0.3);
+    --shadow-card: 0 10px 40px hsl(0 0% 0% / 0.3);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --sidebar-background: 0 0% 98%;
 
