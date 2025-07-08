@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:carboneye/utils/constants.dart';
 import 'package:carboneye/services/notification_service.dart';
 import 'package:carboneye/utils/file_helper.dart';
-import 'package:carboneye/screens/privacy_policy_screen.dart';
 import 'package:carboneye/screens/edit_account_screen.dart';
+import 'package:carboneye/screens/log_viewer_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -14,13 +15,44 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final NotificationService _notificationService = NotificationService();
-  bool _pushNotificationsEnabled = true;
+  bool _pushNotificationsEnabled = false;
   bool _emailNotificationsEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _notificationService.init();
+  }
+
+  // --- THIS METHOD IS NOW UPDATED WITH USER FEEDBACK ---
+  Future<void> _handlePushToggle(bool value) async {
+    // If the user is trying to turn the toggle ON
+    if (value) {
+      final bool? permissionGranted = await _notificationService.requestPermissions();
+
+      if (mounted) {
+        if (permissionGranted ?? false) {
+          // If permission is granted, update the state and show a test notification
+          setState(() {
+            _pushNotificationsEnabled = true;
+          });
+          await _notificationService.showTestNotification();
+        } else {
+          // If permission is denied, show a snackbar explaining why it's off
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Permission denied. Notifications cannot be enabled.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } else {
+      // If the user is turning the toggle OFF, just update the state
+      setState(() {
+        _pushNotificationsEnabled = false;
+      });
+    }
   }
 
   Future<void> _handleEmailToggle(bool value) async {
@@ -92,12 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 SwitchListTile(
                   title: Text("Push Notifications", style: kBodyTextStyle),
                   value: _pushNotificationsEnabled,
-                  onChanged: (bool value) {
-                    setState(() => _pushNotificationsEnabled = value);
-                    if (value) {
-                      _notificationService.showTestNotification();
-                    }
-                  },
+                  onChanged: _handlePushToggle,
                   activeColor: kAccentColor,
                 ),
                 const Divider(color: kBackgroundColor, height: 1),
@@ -122,13 +149,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 30),
-            Text("About", style: kSectionTitleStyle.copyWith(fontSize: 22)),
+            Text("Developer", style: kSectionTitleStyle.copyWith(fontSize: 22)),
             const SizedBox(height: 16),
             _buildSettingsCard(
               children: [
                 _buildSettingsTile(
-                  icon: Icons.shield_outlined,
-                  title: "Privacy Policy",
+                  icon: Icons.description_outlined,
+                  title: "View Email Log",
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LogViewerScreen())),
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
+            Text("Privacy and Policy", style: kSectionTitleStyle.copyWith(fontSize: 22)),
+            const SizedBox(height: 16),
+            _buildSettingsCard(
+              children: [
+                _buildSettingsTile(
+                  icon: Icons.description_outlined,
+                  title: "View our Privacy Policies",
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen())),
                 ),
               ],

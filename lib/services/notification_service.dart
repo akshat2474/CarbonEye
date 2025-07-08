@@ -14,6 +14,13 @@ class NotificationService {
     await _notificationsPlugin.initialize(initializationSettings);
   }
 
+  Future<bool?> requestPermissions() async {
+    return _notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+  }
+
   Future<void> showTestNotification() async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
@@ -26,6 +33,7 @@ class NotificationService {
     );
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
+
     await _notificationsPlugin.show(
       0,
       'Notifications Enabled',

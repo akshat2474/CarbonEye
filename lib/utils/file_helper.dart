@@ -13,4 +13,19 @@ class FileHelper {
       print('Error writing to log file: $e');
     }
   }
+
+  static Future<String> readEmailLog() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/email_log.txt');
+
+      if (await file.exists()) {
+        return await file.readAsString();
+      } else {
+        return "Log file not found. No emails have been logged yet.";
+      }
+    } catch (e) {
+      return "An error occurred while reading the log file: $e";
+    }
+  }
 }
