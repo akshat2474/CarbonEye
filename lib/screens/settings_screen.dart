@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:carboneye/utils/constants.dart';
 import 'package:carboneye/services/notification_service.dart';
-import 'package:carboneye/utils/file_helper.dart';
+import 'package:carboneye/screens/privacy_policy_screen.dart';
 import 'package:carboneye/screens/edit_account_screen.dart';
+import 'package:carboneye/utils/file_helper.dart';
 import 'package:carboneye/screens/log_viewer_screen.dart';
-import 'privacy_policy_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -22,23 +23,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _notificationService.init();
+    _loadPreferences();
   }
 
-  // --- THIS METHOD IS NOW UPDATED WITH USER FEEDBACK ---
+  // This method now loads all saved preferences
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _pushNotificationsEnabled = prefs.getBool('pushNotificationsEnabled') ?? false;
+      _emailNotificationsEnabled = prefs.getBool('emailNotificationsEnabled') ?? false;
+    });
+  }
+
+  // This method now saves all preferences
+  Future<void> _savePreference(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
+
   Future<void> _handlePushToggle(bool value) async {
-    // If the user is trying to turn the toggle ON
     if (value) {
       final bool? permissionGranted = await _notificationService.requestPermissions();
-
       if (mounted) {
         if (permissionGranted ?? false) {
-          // If permission is granted, update the state and show a test notification
-          setState(() {
-            _pushNotificationsEnabled = true;
-          });
+          setState(() => _pushNotificationsEnabled = true);
+          await _savePreference('pushNotificationsEnabled', true);
           await _notificationService.showTestNotification();
         } else {
-          // If permission is denied, show a snackbar explaining why it's off
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Permission denied. Notifications cannot be enabled.'),
@@ -48,10 +59,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }
       }
     } else {
-      // If the user is turning the toggle OFF, just update the state
-      setState(() {
-        _pushNotificationsEnabled = false;
-      });
+      setState(() => _pushNotificationsEnabled = false);
+      await _savePreference('pushNotificationsEnabled', false);
     }
   }
 
@@ -60,14 +69,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final email = await _showEmailInputDialog();
       if (email != null && email.isNotEmpty) {
         await FileHelper.writeEmailToLog(email);
-        setState(() {
-          _emailNotificationsEnabled = true;
-        });
+        setState(() => _emailNotificationsEnabled = true);
+        await _savePreference('emailNotificationsEnabled', true);
       }
     } else {
-      setState(() {
-        _emailNotificationsEnabled = false;
-      });
+      setState(() => _emailNotificationsEnabled = false);
+      await _savePreference('emailNotificationsEnabled', false);
     }
   }
 
@@ -149,6 +156,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 30),
+            Text("About", style: kSectionTitleStyle.copyWith(fontSize: 22)),
+            const SizedBox(height: 16),
+            _buildSettingsCard(
+              children: [
+                _buildSettingsTile(
+                  icon: Icons.shield_outlined,
+                  title: "Privacy Policy",
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen())),
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
+            // The Developer section is now restored
             Text("Developer", style: kSectionTitleStyle.copyWith(fontSize: 22)),
             const SizedBox(height: 16),
             _buildSettingsCard(
@@ -157,18 +177,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.description_outlined,
                   title: "View Email Log",
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LogViewerScreen())),
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-            Text("Privacy and Policy", style: kSectionTitleStyle.copyWith(fontSize: 22)),
-            const SizedBox(height: 16),
-            _buildSettingsCard(
-              children: [
-                _buildSettingsTile(
-                  icon: Icons.description_outlined,
-                  title: "View our Privacy Policies",
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen())),
                 ),
               ],
             ),
