@@ -10,6 +10,7 @@ import 'package:carboneye/models/watchlist_item.dart';
 import 'package:carboneye/models/annotation.dart';
 import 'package:carboneye/screens/annotation_screen.dart';
 import 'package:carboneye/screens/settings_screen.dart';
+import 'package:carboneye/screens/all_alerts_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -255,7 +256,12 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: Icons.notifications_active_outlined,
           title: "View All Alerts",
           subtitle: "Review active and past deforestation events",
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AllAlertsScreen()),
+            );
+          },
         ),
         const SizedBox(height: 12),
         DashboardItem(
@@ -265,13 +271,11 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () {},
         ),
         const SizedBox(height: 12),
-        // --- THIS ITEM IS NOW FUNCTIONAL ---
         DashboardItem(
           icon: Icons.settings_outlined,
           title: "Settings",
           subtitle: "Configure notifications and account details",
           onTap: () {
-            // Navigate to the new SettingsScreen
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const SettingsScreen()),
