@@ -1,14 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&display=swap');
-
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&display=swap");
 
 * {
   margin: 0;
@@ -114,7 +113,7 @@ body {
 }
 
 .dashboard-btn:hover::after {
-align-items: center;
+  align-items: center;
   transform: scaleX(0.8);
 }
 
@@ -179,15 +178,54 @@ align-items: center;
     transform: translateY(-20px) rotate(180deg);
   }
 }
+.stat-heading {
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  color: #cbcbcb;
+  margin-bottom: 0.5rem;
+  margin-top: 2rem;
+  letter-spacing: -0.5px;
+}
+
+.stat-subtitle {
+  font-size: 1.25rem;
+  font-weight: 400;
+  text-align: center;
+  color: #cdcdcd;
+  margin-bottom: 2rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stats-outermost{
+  display: flex;
+  background: url(assets/stats-bg.jpg);
+  align-items: center;
+  flex-direction: column;
+
+}
 
 .stats-container {
   display: flex;
   justify-content: space-around;
   align-items: center;
   width: 100%;
-  min-height: 300px;
+  min-height: 400px;
   padding: 40px;
-  background: url(assets/hero-bg.jpg);
 }
 
 .stat-item {
@@ -198,14 +236,14 @@ align-items: center;
 .stat-number {
   font-size: 6rem;
   font-weight: bold;
-  color: #32cd32;
+  color: #bbe1bb;
   margin-bottom: 10px;
   line-height: 1;
 }
 
 .stat-label {
   font-size: 1.5rem;
-  color: #312323;
+  color: #e8dfdf;
   opacity: 0.8;
   text-transform: capitalize;
 }
