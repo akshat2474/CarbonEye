@@ -9,10 +9,10 @@ class AnnotationScreen extends StatefulWidget {
   const AnnotationScreen({super.key, required this.watchlistItem});
 
   @override
-  _AnnotationScreenState createState() => _AnnotationScreenState();
+  AnnotationScreenState createState() => AnnotationScreenState();
 }
 
-class _AnnotationScreenState extends State<AnnotationScreen> {
+class AnnotationScreenState extends State<AnnotationScreen> {
   final TextEditingController _textController = TextEditingController();
   late List<Annotation> _annotations;
 

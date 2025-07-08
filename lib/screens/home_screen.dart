@@ -9,6 +9,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:carboneye/models/watchlist_item.dart';
 import 'package:carboneye/models/annotation.dart';
 import 'package:carboneye/screens/annotation_screen.dart';
+import 'package:carboneye/screens/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -264,15 +265,23 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () {},
         ),
         const SizedBox(height: 12),
+        // --- THIS ITEM IS NOW FUNCTIONAL ---
         DashboardItem(
           icon: Icons.settings_outlined,
           title: "Settings",
           subtitle: "Configure notifications and account details",
-          onTap: () {},
+          onTap: () {
+            // Navigate to the new SettingsScreen
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
+          },
         ),
       ],
     );
   }
+
 
   Widget _buildMapFilters() {
     return SingleChildScrollView(

@@ -1,0 +1,16 @@
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+
+class FileHelper {
+  static Future<void> writeEmailToLog(String email) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/email_log.txt');
+      final timestamp = DateTime.now().toIso8601String();
+      final logEntry = '[$timestamp] User opted-in for email notifications with email: $email\n';
+      await file.writeAsString(logEntry, mode: FileMode.append);
+    } catch (e) {
+      print('Error writing to log file: $e');
+    }
+  }
+}
