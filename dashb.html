@@ -67,19 +67,7 @@
           </button>
         </div>
         <div class="map-container">
-          <div class="map-placeholder">
-            <div class="map-points">
-              <div
-                class="map-point south-america"
-                onclick="showMapPoint('South America')"
-              ></div>
-              <div
-                class="map-point africa"
-                onclick="showMapPoint('Africa')"
-              ></div>
-              <div class="map-point asia" onclick="showMapPoint('Asia')"></div>
-            </div>
-          </div>
+          <div class="map-placeholder" id="map"></div>
         </div>
       </div>
 
@@ -136,6 +124,13 @@
       </div>
     </div>
 
+    <!-- Leaflet CSS & JS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
       // Navigation Functions
       function goBack() {
@@ -148,63 +143,85 @@
         console.log("Adding to watchlist...");
       }
 
-      function selectWatchlistItem(item) {
-        // Remove active class from all items
-        document.querySelectorAll(".watchlist-item").forEach((i) => {
-          i.classList.remove("active");
-          i.querySelector(".watchlist-icon").classList.remove("active");
-        });
+      const map = L.map("map").setView([20, 0], 2);
 
-        // Add active class to clicked item
-        item.classList.add("active");
-        item.querySelector(".watchlist-icon").classList.add("active");
+      // Dark tile layer
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        {
+          attribution: "&copy; CartoDB",
+          subdomains: "abcd",
+          maxZoom: 19,
+        }
+      ).addTo(map);
+
+      // Load selected countries from localStorage
+      let selectedCountries = JSON.parse(
+        localStorage.getItem("selectedCountries") || "[]"
+      );
+
+      // Save to localStorage
+      function saveSelectedCountries() {
+        localStorage.setItem(
+          "selectedCountries",
+          JSON.stringify(selectedCountries)
+        );
       }
 
-      // Map Functions
+      // Load country GeoJSON
+      fetch(
+        "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json"
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          L.geoJSON(data, {
+            style: (feature) => {
+              const iso = feature.id;
+              const isSelected = selectedCountries.includes(iso);
+              return {
+                color: isSelected ? "#27ae60" : "#444",
+                weight: 1,
+                fillColor: isSelected ? "#27ae60" : "#1c1c1c",
+                fillOpacity: 0.7,
+              };
+            },
+            onEachFeature: (feature, layer) => {
+              const iso = feature.id;
+
+              layer.on("click", () => {
+                const index = selectedCountries.indexOf(iso);
+                const isSelected = index > -1;
+
+                if (isSelected) {
+                  selectedCountries.splice(index, 1); // remove
+                } else {
+                  selectedCountries.push(iso); // add
+                }
+
+                saveSelectedCountries();
+
+                // Update style
+                layer.setStyle({
+                  color: isSelected ? "#444" : "#27ae60",
+                  fillColor: isSelected ? "#1c1c1c" : "#27ae60",
+                  fillOpacity: 0.7,
+                  weight: 1,
+                });
+              });
+
+              layer.bindTooltip(feature.properties.name);
+            },
+          }).addTo(map);
+        });
+
+      // Map view toggle button logic
       function setMapView(view) {
         document.querySelectorAll(".map-btn").forEach((btn) => {
           btn.classList.remove("active");
         });
+
         event.target.classList.add("active");
         console.log("Map view changed to:", view);
-      }
-
-      function showMapPoint(region) {
-        console.log("Showing map point for:", region);
-      }
-
-      // Dashboard Functions
-      function analyzeRegion() {
-        console.log("Analyzing new region...");
-      }
-
-      function viewAlerts() {
-        console.log("Viewing alerts...");
-      }
-
-      function generateReport() {
-        console.log("Generating report...");
-      }
-
-      function openSettings() {
-        console.log("Opening settings...");
-      }
-
-      // Settings Functions
-      function toggleSetting(toggle) {
-        toggle.classList.toggle("active");
-      }
-
-      function editAccount() {
-        console.log("Editing account details...");
-      }
-
-      function viewEmailLog() {
-        console.log("Viewing email log...");
-      }
-
-      function viewPrivacyPolicy() {
-        console.log("Viewing privacy policy...");
       }
 
       // Initialize

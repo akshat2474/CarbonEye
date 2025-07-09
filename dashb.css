@@ -158,6 +158,21 @@ body > * {
 }
 
 /* Map Section */
+.map-container {
+  width: 100%;
+  height: 600px; /* Adjust as needed */
+  position: relative;
+  margin: 20px 0;
+}
+
+.map-placeholder {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+/* Map Section */
 .map-controls {
   display: flex;
   gap: 10px;
@@ -185,60 +200,8 @@ body > * {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.map-container {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 15px;
-  height: 400px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.map-placeholder {
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400"><rect width="800" height="400" fill="%23000"/><path d="M150 150 Q200 100 250 150 T350 150 Q400 120 450 150 T550 150 Q600 130 650 150" stroke="%23333" stroke-width="2" fill="none"/><circle cx="200" cy="200" r="8" fill="%237ed321"/><circle cx="400" cy="180" r="8" fill="%237ed321"/><circle cx="600" cy="160" r="8" fill="%237ed321"/></svg>')
-    center/cover;
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.map-points {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-
-.map-point {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: #7ed321;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.map-point:hover {
-  transform: scale(1.5);
-}
-
-.map-point.south-america {
-  top: 60%;
-  left: 25%;
-}
-
-.map-point.africa {
-  top: 45%;
-  left: 55%;
-}
-
-.map-point.asia {
-  top: 35%;
-  left: 75%;
+.leaflet-container {
+  background: #1c1c1c !important;
 }
 
 /* Dashboard Grid */
