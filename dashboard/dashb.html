@@ -1,11 +1,682 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Environmental Dashboard</title>
+    <link rel="icon" type="image/png" href="./assets/final1.png" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: linear-gradient(135deg, #1a3a2e 0%, #2d5a4d 100%);
+        color: white;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 10px 0;
+      }
+
+      .back-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        margin-right: 15px;
+        padding: 5px;
+        border-radius: 50%;
+        transition: background 0.3s ease;
+      }
+
+      .back-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .header h1 {
+        font-size: 28px;
+        font-weight: 500;
+        letter-spacing: -0.5px;
+      }
+
+      /* Section Headers */
+      .section {
+        margin-bottom: 40px;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .section-title {
+        font-size: 24px;
+        font-weight: 500;
+        letter-spacing: -0.5px;
+      }
+
+      .add-btn {
+        background: none;
+        border: none;
+        color: #7ed321;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 8px 15px;
+        border-radius: 20px;
+        transition: background 0.3s ease;
+      }
+
+      .add-btn:hover {
+        background: rgba(126, 211, 33, 0.1);
+      }
+
+      /* Watchlist */
+      .watchlist-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .watchlist-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateX(5px);
+      }
+
+      .watchlist-item.active {
+        border-color: #7ed321;
+        background: rgba(126, 211, 33, 0.1);
+      }
+
+      .watchlist-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .watchlist-icon {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .watchlist-icon.active {
+        background: #7ed321;
+      }
+
+      .watchlist-text {
+        font-size: 18px;
+        font-weight: 400;
+      }
+
+      .arrow {
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      /* Map Section */
+      .map-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .map-btn {
+        padding: 10px 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+      }
+
+      .map-btn.active {
+        background: #7ed321;
+        border-color: #7ed321;
+        color: #1a3a2e;
+      }
+
+      .map-btn:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .map-container {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        height: 400px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .map-placeholder {
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400"><rect width="800" height="400" fill="%23000"/><path d="M150 150 Q200 100 250 150 T350 150 Q400 120 450 150 T550 150 Q600 130 650 150" stroke="%23333" stroke-width="2" fill="none"/><circle cx="200" cy="200" r="8" fill="%237ed321"/><circle cx="400" cy="180" r="8" fill="%237ed321"/><circle cx="600" cy="160" r="8" fill="%237ed321"/></svg>')
+          center/cover;
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+
+      .map-points {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+
+      .map-point {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: #7ed321;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+
+      .map-point:hover {
+        transform: scale(1.5);
+      }
+
+      .map-point.south-america {
+        top: 60%;
+        left: 25%;
+      }
+
+      .map-point.africa {
+        top: 45%;
+        left: 55%;
+      }
+
+      .map-point.asia {
+        top: 35%;
+        left: 75%;
+      }
+
+      /* Dashboard Grid */
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      .dashboard-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .dashboard-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+      }
+
+      .dashboard-icon {
+        width: 50px;
+        height: 50px;
+        background: #7ed321;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #1a3a2e;
+        flex-shrink: 0;
+      }
+
+      .dashboard-content h3 {
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 5px;
+        letter-spacing: -0.3px;
+      }
+
+      .dashboard-content p {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.4;
+      }
+
+      /* Settings */
+      .settings-section {
+        margin-bottom: 30px;
+      }
+
+      .settings-section h3 {
+        font-size: 20px;
+        font-weight: 500;
+        margin-bottom: 15px;
+        letter-spacing: -0.3px;
+      }
+
+      .settings-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .settings-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .settings-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .settings-icon {
+        width: 24px;
+        height: 24px;
+        color: #7ed321;
+      }
+
+      .settings-text {
+        font-size: 16px;
+        font-weight: 400;
+      }
+
+      .toggle {
+        width: 50px;
+        height: 26px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 13px;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .toggle.active {
+        background: #7ed321;
+      }
+
+      .toggle::before {
+        content: "";
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        background: white;
+        border-radius: 50%;
+        top: 2px;
+        left: 2px;
+        transition: transform 0.3s ease;
+      }
+
+      .toggle.active::before {
+        transform: translateX(24px);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .container {
+          padding: 15px;
+        }
+
+        .header h1 {
+          font-size: 24px;
+        }
+
+        .section-title {
+          font-size: 20px;
+        }
+
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .map-container {
+          height: 300px;
+        }
+
+        .dashboard-item {
+          padding: 20px;
+        }
+
+        .dashboard-content h3 {
+          font-size: 16px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header h1 {
+          font-size: 20px;
+        }
+
+        .section-title {
+          font-size: 18px;
+        }
+
+        .watchlist-item {
+          padding: 15px;
+        }
+
+        .watchlist-text {
+          font-size: 16px;
+        }
+
+        .map-container {
+          height: 250px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <h1>My Dashboard</h1>
+      </div>
+
+      <!-- Watchlist Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">My Watchlist</h2>
+          <button class="add-btn" onclick="addToWatchlist()">+ Add</button>
+        </div>
+        <div class="watchlist-item" onclick="selectWatchlistItem(this)">
+          <div class="watchlist-content">
+            <div class="watchlist-icon"></div>
+            <div class="watchlist-text">Amazonas, Brazil</div>
+          </div>
+          <div class="arrow"></div>
+        </div>
+        <div class="watchlist-item" onclick="selectWatchlistItem(this)">
+          <div class="watchlist-content">
+            <div class="watchlist-icon"></div>
+            <div class="watchlist-text">Congo Basin, DRC</div>
+          </div>
+          <div class="arrow"></div>
+        </div>
+        <div class="watchlist-item active" onclick="selectWatchlistItem(this)">
+          <div class="watchlist-content">
+            <div class="watchlist-icon active"></div>
+            <div class="watchlist-text">Borneo, Indonesia</div>
+          </div>
+          <div class="arrow"></div>
+        </div>
+      </div>
+
+      <!-- Map Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Global Deforestation Hotspots</h2>
+        </div>
+        <div class="map-controls">
+          <button class="map-btn active" onclick="setMapView('heatmap')">
+            Heatmap
+          </button>
+          <button class="map-btn" onclick="setMapView('satellite')">
+            Satellite
+          </button>
+          <button class="map-btn" onclick="setMapView('political')">
+            Political
+          </button>
+        </div>
+        <div class="map-container">
+          <div class="map-placeholder">
+            <div class="map-points">
+              <div
+                class="map-point south-america"
+                onclick="showMapPoint('South America')"
+              ></div>
+              <div
+                class="map-point africa"
+                onclick="showMapPoint('Africa')"
+              ></div>
+              <div class="map-point asia" onclick="showMapPoint('Asia')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Dashboard</h2>
+        </div>
+        <div class="dashboard-grid">
+          <div class="dashboard-item" onclick="analyzeRegion()">
+            <div class="dashboard-icon">
+              <img
+                src="assets/target.svg"
+                alt="Target Icon"
+                width="24"
+                height="24"
+              />
+            </div>
+            <div class="dashboard-content">
+              <h3>Analyze New Region</h3>
+              <p>Select an area for one-time analysis</p>
+            </div>
+          </div>
+          <div class="dashboard-item" onclick="viewAlerts()">
+            <div class="dashboard-icon">
+              <img
+                src="assets/bell.svg"
+                alt="Bell Icon"
+                width="24"
+                height="24"
+              />
+            </div>
+            <div class="dashboard-content">
+              <h3>View All Alerts</h3>
+              <p>Review active and past deforestation events</p>
+            </div>
+          </div>
+          <div class="dashboard-item" onclick="generateReport()">
+            <div class="dashboard-icon">
+              <img
+                src="assets/chart.svg"
+                alt="Chart Icon"
+                width="24"
+                height="24"
+              />
+            </div>
+            <div class="dashboard-content">
+              <h3>Generate Report</h3>
+              <p>Create a detailed ESG or impact report</p>
+            </div>
+          </div>
+          <div class="dashboard-item" onclick="openSettings()">
+            <div class="dashboard-icon">
+              <img
+                src="assets/settings.svg"
+                alt="Settings Icon"
+                width="24"
+                height="24"
+              />
+            </div>
+            <div class="dashboard-content">
+              <h3>Settings</h3>
+              <p>Configure notifications and account details</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Settings</h2>
+        </div>
+
+        <div class="settings-section">
+          <h3>Notifications</h3>
+          <div class="settings-item">
+            <div class="settings-content">
+              <div class="settings-text">Push Notifications</div>
+            </div>
+            <div class="toggle" onclick="toggleSetting(this)"></div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-content">
+              <div class="settings-text">Email Notifications</div>
+            </div>
+            <div class="toggle" onclick="toggleSetting(this)"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Account</h3>
+          <div class="settings-item" onclick="editAccount()">
+            <div class="settings-content">
+              <div class="settings-icon">👤</div>
+              <div class="settings-text">Edit Account Details</div>
+            </div>
+            <div class="arrow">›</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Developer</h3>
+          <div class="settings-item" onclick="viewEmailLog()">
+            <div class="settings-content">
+              <div class="settings-icon">📋</div>
+              <div class="settings-text">View Email Log</div>
+            </div>
+            <div class="arrow">›</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Privacy and Policy</h3>
+          <div class="settings-item" onclick="viewPrivacyPolicy()">
+            <div class="settings-content">
+              <div class="settings-icon">📄</div>
+              <div class="settings-text">View our Privacy Policies</div>
+            </div>
+            <div class="arrow">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Navigation Functions
+      function goBack() {
+        console.log("Going back...");
+        window.history.back();
+      }
+
+      // Watchlist Functions
+      function addToWatchlist() {
+        console.log("Adding to watchlist...");
+      }
+
+      function selectWatchlistItem(item) {
+        // Remove active class from all items
+        document.querySelectorAll(".watchlist-item").forEach((i) => {
+          i.classList.remove("active");
+          i.querySelector(".watchlist-icon").classList.remove("active");
+        });
+
+        // Add active class to clicked item
+        item.classList.add("active");
+        item.querySelector(".watchlist-icon").classList.add("active");
+      }
+
+      // Map Functions
+      function setMapView(view) {
+        document.querySelectorAll(".map-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+        console.log("Map view changed to:", view);
+      }
+
+      function showMapPoint(region) {
+        console.log("Showing map point for:", region);
+      }
+
+      // Dashboard Functions
+      function analyzeRegion() {
+        console.log("Analyzing new region...");
+      }
+
+      function viewAlerts() {
+        console.log("Viewing alerts...");
+      }
+
+      function generateReport() {
+        console.log("Generating report...");
+      }
+
+      function openSettings() {
+        console.log("Opening settings...");
+      }
+
+      // Settings Functions
+      function toggleSetting(toggle) {
+        toggle.classList.toggle("active");
+      }
+
+      function editAccount() {
+        console.log("Editing account details...");
+      }
+
+      function viewEmailLog() {
+        console.log("Viewing email log...");
+      }
+
+      function viewPrivacyPolicy() {
+        console.log("Viewing privacy policy...");
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("Environmental Dashboard loaded");
+      });
+    </script>
+  </body>
 </html>
