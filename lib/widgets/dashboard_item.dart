@@ -1,13 +1,19 @@
+import 'package:carboneye/utils/constants.dart';
 import 'package:flutter/material.dart';
+
+/// A custom list item widget for the dashboard section.
+/// This version is updated to match the design of your original home screen.
 class DashboardItem extends StatelessWidget {
   final IconData icon;
-  final String label;
+  final String title;
+  final String subtitle;
   final VoidCallback onTap;
 
   const DashboardItem({
-    super.key, 
+    super.key,
     required this.icon,
-    required this.label,
+    required this.title,
+    required this.subtitle,
     required this.onTap,
   });
 
@@ -15,22 +21,29 @@ class DashboardItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(15.0),
+      borderRadius: BorderRadius.circular(12.0),
       child: Container(
+        padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: Colors.grey.shade800,
-          borderRadius: BorderRadius.circular(15.0),
+          color: kCardColor,
+          borderRadius: BorderRadius.circular(12.0),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
-            Icon(icon, size: 32, color: Colors.white),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            Icon(icon, color: kAccentColor, size: 28),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(title, style: kBodyTextStyle.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: kSecondaryBodyTextStyle.copyWith(fontSize: 13)),
+                ],
+              ),
             ),
+            const Icon(Icons.arrow_forward_ios, color: kSecondaryTextColor, size: 16),
           ],
         ),
       ),
