@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:carboneye/models/annotation.dart';
+import 'package:carboneye/models/report_data.dart';
 import 'package:carboneye/models/watchlist_item.dart';
 import 'package:carboneye/screens/all_alerts_screen.dart';
 import 'package:carboneye/screens/annotation_screen.dart';
@@ -22,40 +24,34 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Controllers and Services
   final MapController _mapController = MapController();
   final ApiService _apiService = ApiService();
 
+  // State Variables
   String _selectedMapFilter = 'Heatmap';
   List<Map<String, dynamic>> _detections = [];
   bool _isLoading = false;
   DateTime _lastSynced = DateTime.now();
   WatchlistItem? _activeWatchlistItem;
 
-  final List<WatchlistItem> _watchlistRegions = [
-    WatchlistItem(
-      name: 'Amazonas, Brazil',
-      coordinates: const LatLng(-3.46, -62.21),
-      bbox: [-62.2159, -3.4653, -62.1159, -3.3653],
-      annotations: [Annotation(id: '1', text: "Initial area of concern noted.", timestamp: DateTime.now())],
-    ),
-    WatchlistItem(
-      name: 'Congo Basin, DRC',
-      coordinates: const LatLng(0.5, 23.5),
-      bbox: [17.9416, 0.4598, 18.1416, 0.6598],
-    ),
-    WatchlistItem(
-      name: 'Borneo, Indonesia',
-      coordinates: const LatLng(1.0, 114.0),
-      bbox: [113.9, 0.9, 114.1, 1.1],
-    ),
-  ];
+  // State for map selection mode
+  bool _isSelectionMode = false;
+  List<LatLng> _selectionPoints = [];
 
+  // Data
+  final List<WatchlistItem> _watchlistRegions = [
+    WatchlistItem(name: 'Amazonas, Brazil', coordinates: const LatLng(-3.46, -62.21), bbox: [-62.2159, -3.4653, -62.1159, -3.3653], annotations: [Annotation(id: '1', text: "Initial area of concern noted.", timestamp: DateTime.now())]),
+    WatchlistItem(name: 'Congo Basin, DRC', coordinates: const LatLng(0.5, 23.5), bbox: [17.9416, 0.4598, 18.1416, 0.6598]),
+    WatchlistItem(name: 'Borneo, Indonesia', coordinates: const LatLng(1.0, 114.0), bbox: [113.9, 0.9, 114.1, 1.1]),
+  ];
   final Map<String, dynamic> _availableForestsData = {
     'Sumatra, Indonesia': {'coordinates': const LatLng(0.5897, 101.3431), 'bbox': [101.2431, 0.4897, 101.4431, 0.6897]},
     'New Guinea': {'coordinates': const LatLng(-5.5, 141.5), 'bbox': [141.0, -6.0, 142.0, -5.0]},
     'Madagascar': {'coordinates': const LatLng(-18.9, 47.5), 'bbox': [47.0, -19.4, 48.0, -18.4]},
   };
-  
+
+  /// FINAL FIX: This function uses a new, robust implementation to prevent crashes.
   Future<void> _runAnalysis(WatchlistItem item) async {
     setState(() {
       _isLoading = true;
@@ -66,16 +62,41 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final result = await _apiService.analyzeRegion(item.bbox);
       if (!mounted) return;
+
       final newDetections = List<Map<String, dynamic>>.from(result['detections']);
+      
       setState(() {
         _detections = newDetections;
         _lastSynced = DateTime.now();
       });
-      if (newDetections.isNotEmpty) {
-        _fitMapToDetections(newDetections);
+
+      // --- Start of the new, robust map fitting logic ---
+
+      // 1. Carefully create a list of valid geographic points.
+      // This filters out any detections that might have missing or malformed coordinate data.
+      final List<LatLng> validPoints = newDetections.map((d) {
+        final coords = d['center_coordinates'];
+        if (coords is Map && coords['latitude'] is num && coords['longitude'] is num) {
+          return LatLng((coords['latitude'] as num).toDouble(), (coords['longitude'] as num).toDouble());
+        }
+        return null; // This detection is invalid, so we return null for it.
+      }).whereType<LatLng>().toList(); // This efficiently removes all the nulls from the list.
+
+      // 2. This is the crucial safety check. We ONLY proceed if the list of valid points is not empty.
+      if (validPoints.isNotEmpty) {
+        // Because we've confirmed the list is not empty, this call is now 100% safe.
+        final bounds = LatLngBounds.fromPoints(validPoints);
+        _mapController.fitCamera(
+          CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(50.0)),
+        );
       } else {
+        // 3. If there are no valid points to show, we fall back to a safe default:
+        // center the map on the region the user tapped on, preventing any crash.
         _mapController.move(item.coordinates, 8.0);
       }
+      
+      // --- End of the new logic ---
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Analysis complete: ${newDetections.length} detections found for ${item.name}."),
         backgroundColor: Colors.green.shade700,
@@ -90,28 +111,74 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
-  void _fitMapToDetections(List<Map<String, dynamic>> detections) {
-    if (detections.isEmpty) return;
-    final points = detections.map((d) {
-      final coords = d['center_coordinates'];
-      return LatLng(coords['latitude'], coords['longitude']);
-    }).toList();
-    final bounds = LatLngBounds.fromPoints(points);
-    _mapController.fitCamera(CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(50.0)));
-  }
-
-  void _addToWatchlist(String regionName) {
-    if (_availableForestsData.containsKey(regionName) && !_watchlistRegions.any((item) => item.name == regionName)) {
-      final data = _availableForestsData[regionName]!;
-      setState(() {
-        final newItem = WatchlistItem(name: regionName, coordinates: data['coordinates'], bbox: data['bbox']);
-        _watchlistRegions.add(newItem);
-        _runAnalysis(newItem);
-      });
-    }
-  }
   
+  /// FIXED: This function now safely filters out invalid data instead of creating empty polygons.
+  List<Polygon> _buildDetectionPolygons() {
+    return _detections.map((detection) {
+      final bbox = detection['geographic_bbox'];
+      // Check for invalid or incomplete data.
+      if (bbox == null || bbox is! List || bbox.length < 4) {
+        return null;
+      }
+
+      // Safely cast each value, returning null if any are not valid numbers.
+      final minLon = (bbox[0] as num?)?.toDouble();
+      final minLat = (bbox[1] as num?)?.toDouble();
+      final maxLon = (bbox[2] as num?)?.toDouble();
+      final maxLat = (bbox[3] as num?)?.toDouble();
+
+      if (minLon == null || minLat == null || maxLon == null || maxLat == null) {
+        return null;
+      }
+
+      final List<LatLng> polygonPoints = [
+        LatLng(minLat, minLon),
+        LatLng(minLat, maxLon),
+        LatLng(maxLat, maxLon),
+        LatLng(maxLat, minLon),
+      ];
+      
+      final severity = detection['severity']?.toString().toLowerCase() ?? 'medium';
+      final Color regionColor = _getSeverityColor(severity);
+
+      return Polygon(
+        points: polygonPoints,
+        color: regionColor.withOpacity(0.25),
+        borderColor: regionColor.withOpacity(0.7),
+        borderStrokeWidth: 1.5,
+        isFilled: true,
+      );
+    }).whereType<Polygon>().toList(); // This filters out all nulls, creating a clean list.
+  }
+
+  /// FIXED: Applying the same robust filtering logic for markers.
+  List<Marker> _buildDetectionMarkers() {
+    return _detections.map((detection) {
+      final center = detection['center_coordinates'];
+      if (center is! Map || center['latitude'] is! num || center['longitude'] is! num) {
+        return null;
+      }
+      
+      final lat = (center['latitude'] as num).toDouble();
+      final lon = (center['longitude'] as num).toDouble();
+
+      final severity = detection['severity']?.toString().toLowerCase() ?? 'medium';
+      final Color markerColor = _getSeverityColor(severity);
+
+      return Marker(
+        width: 18.0, height: 18.0,
+        point: LatLng(lat, lon),
+        child: GestureDetector(
+          onTap: () => _showDetectionDetailsDialog(detection),
+          child: Tooltip(
+            message: 'Severity: $severity\nArea: ${detection['area_ha']} ha\n(Tap for details)',
+            child: Container(decoration: BoxDecoration(color: markerColor.withAlpha(200), shape: BoxShape.circle, border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.5))),
+          ),
+        ),
+      );
+    }).whereType<Marker>().toList(); // This filters out all nulls.
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,8 +204,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     mapController: _mapController,
                     watchlistMarkers: _buildWatchlistMarkers(),
                     detectionMarkers: _buildDetectionMarkers(),
+                    detectionPolygons: _buildDetectionPolygons(),
+                    isSelectionMode: _isSelectionMode,
+                    selectionPoints: _selectionPoints,
+                    onMapTap: _onMapTapped,
                   ),
                   const SizedBox(height: 8),
+                  if (_isSelectionMode) _buildSelectionControls(),
                   _buildLastSynced(),
                   const SizedBox(height: 30),
                   _buildWatchlist(),
@@ -152,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _isSelectionMode ? null : FloatingActionButton(
         onPressed: () {
           final WatchlistItem? itemToRefresh = _activeWatchlistItem ?? (_watchlistRegions.isNotEmpty ? _watchlistRegions.first : null);
           if (itemToRefresh != null) {
@@ -170,75 +242,188 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDashboardList() {
-    return Column(
-      children: [
-        DashboardItem(icon: Icons.track_changes, title: "Analyze New Region", subtitle: "Select an area for one-time analysis", onTap: _showAddWatchlistDialog),
-        const SizedBox(height: 12),
-        DashboardItem(
-          icon: Icons.notifications_active_outlined,
-          title: "View All Alerts",
-          subtitle: "Review deforestation events from last analysis",
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AllAlertsScreen(detections: _detections))),
-        ),
-        const SizedBox(height: 12),
-        DashboardItem(
-          icon: Icons.document_scanner_outlined,
-          title: "Generate Report",
-          subtitle: "Create a detailed ESG or impact report",
-          onTap: () {
-            final WatchlistItem? regionToReportOn = _activeWatchlistItem ?? (_watchlistRegions.isNotEmpty ? _watchlistRegions.first : null);
+  // --- All other helper methods and build widgets remain unchanged. ---
 
-            if (regionToReportOn == null) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text("Please add a region to your watchlist first."),
-                backgroundColor: Colors.orange,
-              ));
-              return;
-            }
+  void _onMapTapped(LatLng point) {
+    setState(() {
+      if (_selectionPoints.length >= 2) {
+        _selectionPoints = [point];
+      } else {
+        _selectionPoints.add(point);
+      }
+    });
+  }
 
-            final reportData = ReportGenerator.generateReport(
-              region: regionToReportOn,
-              detections: _detections,
-            );
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ReportScreen(reportData: reportData)),
-            );
-          },
-        ),
-        const SizedBox(height: 12),
-        DashboardItem(
-          icon: Icons.settings_outlined,
-          title: "Settings",
-          subtitle: "Configure notifications and account details",
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())),
-        ),
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectionMode = !_isSelectionMode;
+      _selectionPoints = [];
+      if (_isSelectionMode) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Selection Mode Enabled: Tap two corners on the map to define a region.'),
+            backgroundColor: kAccentColor,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    });
+  }
+
+  void _runAnalysisOnSelection() {
+    if (_selectionPoints.length < 2) return;
+
+    final point1 = _selectionPoints[0];
+    final point2 = _selectionPoints[1];
+    
+    final tempItem = WatchlistItem(
+      name: "Custom Selection",
+      coordinates: LatLng((point1.latitude + point2.latitude) / 2, (point1.longitude + point2.longitude) / 2),
+      bbox: [
+        min(point1.longitude, point2.longitude),
+        min(point1.latitude, point2.latitude),
+        max(point1.longitude, point2.longitude),
+        max(point1.latitude, point2.latitude),
       ],
+    );
+
+    _runAnalysis(tempItem);
+    setState(() {
+      _isSelectionMode = false;
+      _selectionPoints = [];
+    });
+  }
+  
+  void _addToWatchlist(String regionName) {
+    if (_availableForestsData.containsKey(regionName) && !_watchlistRegions.any((item) => item.name == regionName)) {
+      final data = _availableForestsData[regionName]!;
+      setState(() {
+        final newItem = WatchlistItem(name: regionName, coordinates: data['coordinates'], bbox: data['bbox']);
+        _watchlistRegions.add(newItem);
+        _runAnalysis(newItem);
+      });
+    }
+  }
+
+  void _showDetectionDetailsDialog(Map<String, dynamic> detection) {
+    final severity = detection['severity']?.toString() ?? 'Medium';
+    final area = (detection['area_ha'] as num?)?.toStringAsFixed(2) ?? '0.00';
+    final center = detection['center_coordinates'];
+    final lat = (center['latitude'] as num?)?.toStringAsFixed(4) ?? 'N/A';
+    final lon = (center['longitude'] as num?)?.toStringAsFixed(4) ?? 'N/A';
+    final Color severityColor = _getSeverityColor(severity);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: kCardColor,
+          title: Text('Detection Details', style: kSectionTitleStyle.copyWith(fontSize: 20)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDetailRow('Severity:', severity.capitalize(), color: severityColor),
+              const SizedBox(height: 12),
+              _buildDetailRow('Area Affected:', '$area ha'),
+              const SizedBox(height: 12),
+              _buildDetailRow('Coordinates:', '$lat, $lon'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Close', style: TextStyle(color: kAccentColor, fontWeight: FontWeight.bold)),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  List<Marker> _buildDetectionMarkers() {
-    return _detections.map((detection) {
-      final center = detection['center_coordinates'];
-      final severity = detection['severity']?.toString().toLowerCase() ?? 'medium';
-      Color markerColor;
-      switch (severity) {
-        case 'critical': markerColor = Colors.red.withAlpha(200); break;
-        case 'high': markerColor = Colors.orange.withAlpha(200); break;
-        default: markerColor = Colors.yellow.withAlpha(200);
-      }
-      return Marker(
-        width: 18.0, height: 18.0,
-        point: LatLng(center['latitude'], center['longitude']),
-        child: Tooltip(
-          message: 'Severity: $severity\nArea: ${detection['area_ha']} ha',
-          child: Container(decoration: BoxDecoration(color: markerColor, shape: BoxShape.circle, border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.5))),
-        ),
-      );
-    }).toList();
+  Widget _buildDetailRow(String label, String value, {Color? color}) {
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: kSecondaryBodyTextStyle),
+      const SizedBox(width: 8),
+      Expanded(child: Text(value, style: kBodyTextStyle.copyWith(fontWeight: FontWeight.bold, color: color ?? kWhiteColor))),
+    ]);
   }
-  
+
+  Color _getSeverityColor(String severity) {
+    switch (severity.toLowerCase()) {
+      case 'critical': return Colors.red.shade400;
+      case 'high': return Colors.orange.shade400;
+      default: return Colors.yellow.shade400;
+    }
+  }
+
+  Widget _buildSelectionControls() {
+    bool canAnalyze = _selectionPoints.length == 2;
+    return Container(
+      margin: const EdgeInsets.only(top: 12.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(color: kCardColor, borderRadius: BorderRadius.circular(12.0), border: Border.all(color: kAccentColor.withOpacity(0.5))),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Expanded(child: Text("Tap two corners to define an area.", style: kSecondaryBodyTextStyle)),
+        const SizedBox(width: 12),
+        TextButton(onPressed: _toggleSelectionMode, child: const Text("Cancel"), style: TextButton.styleFrom(foregroundColor: kWhiteColor)),
+        ElevatedButton.icon(
+          onPressed: canAnalyze ? _runAnalysisOnSelection : null,
+          icon: const Icon(Icons.analytics_outlined, size: 18),
+          label: const Text("Analyze"),
+          style: ElevatedButton.styleFrom(backgroundColor: kAccentColor, foregroundColor: kBackgroundColor, disabledBackgroundColor: Colors.grey.shade700),
+        )
+      ]),
+    );
+  }
+
+  Widget _buildDashboardList() {
+    return Column(children: [
+      DashboardItem(
+        icon: _isSelectionMode ? Icons.cancel_outlined : Icons.track_changes,
+        title: "Analyze New Region",
+        subtitle: _isSelectionMode ? "Selection mode is active" : "Select an area on the map",
+        onTap: _toggleSelectionMode,
+      ),
+      const SizedBox(height: 12),
+      DashboardItem(
+        icon: Icons.notifications_active_outlined,
+        title: "View All Alerts",
+        subtitle: "Review deforestation events from last analysis",
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AllAlertsScreen(detections: _detections))),
+      ),
+      const SizedBox(height: 12),
+      DashboardItem(
+        icon: Icons.document_scanner_outlined,
+        title: "Generate Report",
+        subtitle: "Create a detailed ESG or impact report",
+        onTap: () {
+          final WatchlistItem? regionToReportOn = _activeWatchlistItem ?? (_watchlistRegions.isNotEmpty ? _watchlistRegions.first : null);
+          if (regionToReportOn == null) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please add a region to your watchlist first."), backgroundColor: Colors.orange));
+            return;
+          }
+          final reportData = ReportGenerator.generateReport(region: regionToReportOn, detections: _detections);
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ReportScreen(reportData: reportData)));
+        },
+      ),
+      const SizedBox(height: 12),
+      DashboardItem(
+        icon: Icons.settings_outlined,
+        title: "Settings",
+        subtitle: "Configure notifications and account details",
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen())),
+      ),
+    ]);
+  }
+
+  String _calculateTotalArea() {
+    if (_detections.isEmpty) return "0";
+    final totalHa = _detections.fold<double>(0.0, (sum, item) => sum + (item['area_ha'] ?? 0.0));
+    if (totalHa > 1000000) return '${(totalHa / 1000000).toStringAsFixed(1)}M';
+    if (totalHa > 1000) return '${(totalHa / 1000).toStringAsFixed(1)}K';
+    return totalHa.toStringAsFixed(0);
+  }
 
   List<Marker> _buildWatchlistMarkers() {
     return _watchlistRegions.map((item) {
@@ -327,6 +512,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
         _buildStatItem("Active Alerts", _detections.length.toString()),
         _buildStatItem("Regions", _watchlistRegions.length.toString()),
+        _buildStatItem("Area (ha)", _calculateTotalArea()),
       ]),
     );
   }
@@ -365,5 +551,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       );
     });
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    if (isEmpty) return this;
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }
