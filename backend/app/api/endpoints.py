@@ -235,3 +235,157 @@ async def validate_coordinates(coordinates: List[float]):
         "area_km2": round(area_km2, 2),
         "message": "Coordinates are valid"
     }
+
+from typing import Dict, Any
+from pydantic import BaseModel
+
+class ImageComparisonRequest(BaseModel):
+    bbox_coordinates: List[float] = Field(..., min_length=4, max_length=4)
+    days_back: Optional[int] = Field(default=10, ge=1, le=30)
+    resolution: Optional[int] = Field(default=60, ge=10, le=100)
+
+class ImageComparisonResponse(BaseModel):
+    success: bool
+    timestamp: str
+    t0_image: str  # Base64 encoded image
+    t1_image: str  # Base64 encoded image
+    t0_date_range: Dict[str, str]
+    t1_date_range: Dict[str, str]
+    image_metadata: Dict[str, Any]
+    message: str
+
+@router.post("/extract-images", response_model=ImageComparisonResponse)
+async def extract_comparison_images(
+    request: ImageComparisonRequest,
+    satellite_fetcher: SatelliteDataFetcher = Depends(get_satellite_fetcher)
+):
+    """
+    Extract T0 and T1 satellite images for visual comparison
+    """
+    try:
+        logger.info(f"Extracting images for bbox: {request.bbox_coordinates}")
+        
+        # Validate bounding box
+        min_lon, min_lat, max_lon, max_lat = request.bbox_coordinates
+        if min_lon >= max_lon or min_lat >= max_lat:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid bounding box coordinates"
+            )
+        
+        # Calculate date ranges
+        from datetime import datetime, timedelta
+        end_date = datetime.now()
+        start_date_t1 = end_date - timedelta(days=3)
+        start_date_t0 = end_date - timedelta(days=request.days_back + 3)
+        end_date_t0 = end_date - timedelta(days=request.days_back)
+        
+        # Fetch comparison data
+        t0_ndvi_data, t1_ndvi_data, t0_rgb_image, t1_rgb_image = satellite_fetcher.get_comparison_images(
+            request.bbox_coordinates,
+            request.days_back
+        )
+        
+        # Convert images to base64 for web transfer
+        t0_image_b64 = satellite_fetcher.convert_image_to_base64(t0_rgb_image)
+        t1_image_b64 = satellite_fetcher.convert_image_to_base64(t1_rgb_image)
+        
+        # Prepare response
+        response = ImageComparisonResponse(
+            success=True,
+            timestamp=datetime.now().isoformat(),
+            t0_image=t0_image_b64,
+            t1_image=t1_image_b64,
+            t0_date_range={
+                "start": start_date_t0.strftime('%Y-%m-%d'),
+                "end": end_date_t0.strftime('%Y-%m-%d')
+            },
+            t1_date_range={
+                "start": start_date_t1.strftime('%Y-%m-%d'),
+                "end": end_date.strftime('%Y-%m-%d')
+            },
+            image_metadata={
+                "resolution": request.resolution,
+                "image_size": f"{t0_rgb_image.shape[1]}x{t0_rgb_image.shape[0]}",
+                "bands": "RGB (True Color)",
+                "source": "Sentinel-2 L2A"
+            },
+            message=f"Successfully extracted comparison images for {request.days_back}-day analysis"
+        )
+        
+        logger.info("Image extraction completed successfully")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Image extraction error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Image extraction failed: {str(e)}"
+        )
+
+@router.post("/analyze-with-images", response_model=Dict[str, Any])
+async def analyze_with_images(
+    request: AnalysisRequest,
+    satellite_fetcher: SatelliteDataFetcher = Depends(get_satellite_fetcher),
+    ndvi_processor: NDVIProcessor = Depends(get_ndvi_processor),
+    change_detector: ChangeDetector = Depends(get_change_detector)
+):
+    """
+    Complete analysis with both deforestation detection and image comparison
+    """
+    try:
+        # Get both NDVI data and RGB images
+        t0_ndvi_data, t1_ndvi_data, t0_rgb_image, t1_rgb_image = satellite_fetcher.get_comparison_images(
+            request.bbox_coordinates,
+            request.days_back
+        )
+        
+        # Process NDVI analysis (existing logic)
+        t0_processed = ndvi_processor.preprocess_image(t0_ndvi_data)
+        t1_processed = ndvi_processor.preprocess_image(t1_ndvi_data)
+        
+        ndvi_t0 = ndvi_processor.calculate_ndvi(t0_processed)
+        ndvi_t1 = ndvi_processor.calculate_ndvi(t1_processed)
+        
+        change_results = change_detector.detect_changes(ndvi_t0, ndvi_t1)
+        detections = change_detector.convert_pixel_to_coordinates(
+            change_results['detections'],
+            request.bbox_coordinates,
+            ndvi_t0.shape
+        )
+        
+        # Convert images to base64
+        t0_image_b64 = satellite_fetcher.convert_image_to_base64(t0_rgb_image)
+        t1_image_b64 = satellite_fetcher.convert_image_to_base64(t1_rgb_image)
+        
+        # Combined response
+        response = {
+            "analysis": {
+                "success": True,
+                "timestamp": datetime.now().isoformat(),
+                "detections": detections,
+                "summary": {
+                    "total_detections": len(detections),
+                    "total_changed_pixels": change_results['total_changed_pixels'],
+                    "change_percentage": round(change_results['change_percentage'], 2),
+                    "high_confidence_detections": len([d for d in detections if d['confidence'] > 0.8])
+                }
+            },
+            "images": {
+                "t0_image": t0_image_b64,
+                "t1_image": t1_image_b64,
+                "metadata": {
+                    "resolution": request.resolution,
+                    "image_size": f"{t0_rgb_image.shape[1]}x{t0_rgb_image.shape[0]}",
+                    "bands": "RGB (True Color)"
+                }
+            }
+        }
+        
+        return response
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Combined analysis failed: {str(e)}"
+        )
