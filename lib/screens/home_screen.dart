@@ -1,280 +1,278 @@
-import 'package:flutter/material.dart';
-import 'package:carboneye/utils/constants.dart';
-import 'package:carboneye/widgets/map_preview.dart';
-import 'package:carboneye/widgets/dashboard_item.dart';
-import 'dart:async';
-import 'dart:math';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:carboneye/models/watchlist_item.dart';
 import 'package:carboneye/models/annotation.dart';
 import 'package:carboneye/screens/annotation_screen.dart';
-import 'package:carboneye/screens/settings_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:carboneye/models/watchlist_item.dart';
 import 'package:carboneye/screens/all_alerts_screen.dart';
+import 'package:carboneye/screens/settings_screen.dart';
+import 'package:carboneye/widgets/dashboard_item.dart';
+import 'package:carboneye/widgets/map_preview.dart';
+import 'package:carboneye/services/api_service.dart';
+import 'package:latlong2/latlong.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   final MapController _mapController = MapController();
-  final Random _random = Random();
+  final ApiService _apiService = ApiService();
 
-  String _selectedMapFilter = 'Heatmap';
-  final List<WatchlistItem> _watchlistRegions = [
-    WatchlistItem(name: 'Amazonas, Brazil', coordinates: const LatLng(-3.46, -62.21)),
-    WatchlistItem(name: 'Congo Basin, DRC', coordinates: const LatLng(0.5, 23.5)),
-    WatchlistItem(
-      name: 'Borneo, Indonesia',
-      coordinates: const LatLng(1.0, 114.0),
-      annotations: [Annotation(text: "Initial area of concern noted.", timestamp: DateTime.now().subtract(const Duration(days: 1)))],
-    ),
-  ];
-  DateTime _lastSynced = DateTime.now();
-  bool _isRefreshing = false;
+  bool _isLoading = false;
+  List<Map<String, dynamic>> _detections = [];
+  List<WatchlistItem> _watchlistItems = [];
 
-  void _addToWatchlist(String regionName) {
-    if (regionName.isNotEmpty && !_watchlistRegions.any((item) => item.name == regionName)) {
-      final newCoords = LatLng(
-        _random.nextDouble() * 180 - 90,
-        _random.nextDouble() * 360 - 180,
-      );
-
-      setState(() {
-        _watchlistRegions.add(WatchlistItem(name: regionName, coordinates: newCoords));
-        _mapController.move(newCoords, 6.0);
-      });
-    }
+  @override
+  void initState() {
+    super.initState();
+    _initializeWatchlist();
   }
 
-  Future<void> _refreshData() async {
-    if (_isRefreshing) return;
-    setState(() => _isRefreshing = true);
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) {
-      setState(() {
-        _lastSynced = DateTime.now();
-        _isRefreshing = false;
-      });
-    }
-  }
-
-  Future<void> _showAddWatchlistDialog() async {
-    String? selectedForest;
-    final List<String> availableForests = [
-      'Sumatra, Indonesia', 'New Guinea', 'Madagascar', 'Siberian Taiga',
+  /// Initializes the default list of watchlist items for the user.
+  /// This now correctly uses the updated WatchlistItem model with a list of annotations.
+  void _initializeWatchlist() {
+    _watchlistItems = [
+      WatchlistItem(
+        name: 'Amazonas, Brazil',
+        focusPoint: const LatLng(-3.4653, -62.2159),
+        bbox: [-62.2159, -3.4653, -62.1159, -3.3653],
+        annotations: [
+          Annotation(id: '1', text: 'Initial monitoring area.', timestamp: DateTime.now())
+        ],
+      ),
+      WatchlistItem(
+        name: 'Sumatra, Indonesia',
+        focusPoint: const LatLng(0.5897, 101.3431),
+        bbox: [101.2431, 0.4897, 101.4431, 0.6897],
+        annotations: [], // Starts with an empty list of annotations.
+      ),
+      WatchlistItem(
+        name: 'Congo Basin, DRC',
+        focusPoint: const LatLng(0.5598, 18.0416),
+        bbox: [17.9416, 0.4598, 18.1416, 0.6598],
+        // The annotations parameter is optional and defaults to an empty list.
+      ),
     ];
-
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: kCardColor,
-          title: Text('Add to Watchlist', style: kAppTitleStyle.copyWith(fontSize: 20)),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return DropdownButton<String>(
-                isExpanded: true,
-                value: selectedForest,
-                hint: Text('Select a forest to monitor', style: kSecondaryBodyTextStyle),
-                dropdownColor: kCardColor,
-                style: kBodyTextStyle,
-                icon: const Icon(Icons.arrow_drop_down, color: kAccentColor),
-                underline: Container(height: 1, color: kAccentColor),
-                items: availableForests
-                    .where((forest) => !_watchlistRegions.any((item) => item.name == forest))
-                    .map((String forest) {
-                  return DropdownMenuItem<String>(value: forest, child: Text(forest));
-                }).toList(),
-                onChanged: (String? newValue) => setState(() => selectedForest = newValue),
-              );
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel', style: kSecondaryBodyTextStyle),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: const Text('Add', style: TextStyle(color: kAccentColor, fontWeight: FontWeight.bold)),
-              onPressed: () {
-                if (selectedForest != null) {
-                  _addToWatchlist(selectedForest!);
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
-  List<Marker> _buildWatchlistMarkers() {
-    return _watchlistRegions.map((item) {
-      return Marker(
-        width: 24.0, height: 24.0, point: item.coordinates,
-        child: Container(
-          decoration: BoxDecoration(
-            color: kAccentColor.withOpacity(0.4),
-            shape: BoxShape.circle,
-            border: Border.all(color: kAccentColor, width: 2),
-          ),
-          child: const Center(child: Icon(Icons.push_pin, color: kWhiteColor, size: 12)),
+  /// Triggers an API call to analyze a region and updates the UI state.
+  Future<void> _runAnalysis(List<double> bbox) async {
+    setState(() {
+      _isLoading = true;
+      _detections = [];
+    });
+
+    try {
+      final result = await _apiService.analyzeRegion(bbox);
+      if (!mounted) return; // Safety check for async operations.
+
+      setState(() {
+        _detections = List<Map<String, dynamic>>.from(result['detections']);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${_detections.length} detections found.'),
+          backgroundColor: Colors.green,
         ),
       );
-    }).toList();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBackgroundColor,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Colors.grey[900],
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
           children: [
             _buildHeroSection(),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildStatsSummary(),
-                  const SizedBox(height: 30),
-                  Text("Global Deforestation Hotspots", style: kSectionTitleStyle.copyWith(fontSize: 24)),
-                  const SizedBox(height: 16),
-                  _buildMapFilters(),
-                  const SizedBox(height: 12),
-                  MapPreview(
-                    selectedLayer: _selectedMapFilter,
-                    mapController: _mapController,
-                    watchlistMarkers: _buildWatchlistMarkers(),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildLastSynced(),
-                  const SizedBox(height: 30),
-                  _buildWatchlist(),
-                  const SizedBox(height: 30),
-                  Text("Dashboard", style: kSectionTitleStyle.copyWith(fontSize: 24)),
-                  const SizedBox(height: 16),
-                  _buildDashboardList(),
-                ],
-              ),
+            const SizedBox(height: 24),
+            _buildStatsSummary(),
+            const SizedBox(height: 24),
+            MapPreview(
+              mapController: _mapController,
+              detections: _detections,
             ),
+            if (_isLoading) ...[
+              const SizedBox(height: 16),
+              const Center(child: CircularProgressIndicator()),
+            ],
+            const SizedBox(height: 24),
+            _buildWatchlistSection(),
+            const SizedBox(height: 24),
+            _buildDashboard(),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _refreshData,
-        backgroundColor: kAccentColor,
-        tooltip: 'Refresh Data',
-        child: _isRefreshing
-            ? const CircularProgressIndicator(color: kBackgroundColor, strokeWidth: 2.0)
-            : const Icon(Icons.refresh, color: kBackgroundColor),
       ),
     );
   }
 
-  Widget _buildWatchlist() {
+  Widget _buildHeroSection() {
+    return Container(
+      height: 150,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15.0),
+        image: const DecorationImage(
+          image: AssetImage('assets/satellite-hero.jpg'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15.0),
+          gradient: LinearGradient(
+            colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+          ),
+        ),
+        child: const Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Real-time intelligence.\nZero trees lost.',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildStatsSummary() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildStatItem('Active Alerts', _detections.length.toString()),
+        _buildStatItem('Regions', _watchlistItems.length.toString()),
+        _buildStatItem('Area (ha)', '3.4M'), // Example static value
+      ],
+    );
+  }
+
+  Widget _buildStatItem(String label, String value) {
+    return Column(
+      children: [
+        Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+      ],
+    );
+  }
+
+  /// Builds the watchlist section with an icon to navigate to annotations.
+  Widget _buildWatchlistSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("My Watchlist", style: kSectionTitleStyle.copyWith(fontSize: 24)),
-            TextButton.icon(
-              onPressed: _showAddWatchlistDialog,
-              icon: const Icon(Icons.add, color: kAccentColor, size: 20),
-              label: const Text('Add', style: TextStyle(color: kAccentColor)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: kCardColor,
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _watchlistRegions.length,
-            itemBuilder: (context, index) {
-              final item = _watchlistRegions[index];
-              return ListTile(
+        const Text('My Watchlist', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+        const SizedBox(height: 12),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _watchlistItems.length,
+          itemBuilder: (context, index) {
+            final item = _watchlistItems[index];
+            return Card(
+              color: Colors.grey.shade800,
+              margin: const EdgeInsets.symmetric(vertical: 4.0),
+              child: ListTile(
                 leading: IconButton(
                   icon: Icon(
-                    Icons.chat_bubble_outline,
-                    color: item.annotations.isNotEmpty ? kAccentColor : kSecondaryTextColor,
+                    item.annotations.isEmpty ? Icons.note_add_outlined : Icons.notes,
+                    color: Colors.grey.shade400,
                   ),
+                  tooltip: 'View Notes',
                   onPressed: () async {
-                    final updatedAnnotations = await Navigator.push<List<Annotation>>(
+                    // Navigate to the AnnotationScreen for the selected item.
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => AnnotationScreen(watchlistItem: item),
                       ),
                     );
-
-                    if (updatedAnnotations != null) {
-                      setState(() {
-                        item.annotations.clear();
-                        item.annotations.addAll(updatedAnnotations);
-                      });
-                    }
+                    // Refresh the UI to reflect any changes made to annotations
+                    // (e.g., updating the icon if a note was added).
+                    setState(() {});
                   },
                 ),
-                title: Text(item.name, style: kBodyTextStyle),
-                trailing: const Icon(Icons.arrow_forward_ios, color: kSecondaryTextColor, size: 16),
-                onTap: () => _mapController.move(item.coordinates, 6.0),
-              );
-            },
-            separatorBuilder: (context, index) => const Divider(
-              color: kBackgroundColor, height: 1, indent: 16, endIndent: 16,
-            ),
-          ),
+                title: Text(item.name, style: const TextStyle(color: Colors.white)),
+                trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+                onTap: () {
+                  _mapController.move(item.focusPoint, 10.0);
+                  _runAnalysis(item.bbox);
+                },
+              ),
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _buildDashboardList() {
-    return Column(
+  Widget _buildDashboard() {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 1.5,
       children: [
         DashboardItem(
-          icon: Icons.track_changes,
-          title: "Analyze New Region",
-          subtitle: "Select an area for one-time analysis",
-          onTap: () {},
+          icon: Icons.travel_explore,
+          label: 'Analyze New Region',
+          onTap: () {
+            // A real implementation would show a dialog to get user input for the bbox.
+            final bbox = [-62.2159, -3.4653, -62.1159, -3.3653];
+            _mapController.move(const LatLng(-3.4653, -62.2159), 10.0);
+            _runAnalysis(bbox);
+          },
         ),
-        const SizedBox(height: 12),
         DashboardItem(
-          icon: Icons.notifications_active_outlined,
-          title: "View All Alerts",
-          subtitle: "Review active and past deforestation events",
+          icon: Icons.notifications_active,
+          label: 'View All Alerts',
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AllAlertsScreen()),
+              MaterialPageRoute(
+                builder: (context) => AllAlertsScreen(detections: _detections),
+              ),
             );
           },
         ),
-        const SizedBox(height: 12),
         DashboardItem(
-          icon: Icons.document_scanner_outlined,
-          title: "Generate Report",
-          subtitle: "Create a detailed ESG or impact report",
-          onTap: () {},
+          icon: Icons.document_scanner,
+          label: 'Generate Report',
+          onTap: () { /* Placeholder for future functionality */ },
         ),
-        const SizedBox(height: 12),
         DashboardItem(
-          icon: Icons.settings_outlined,
-          title: "Settings",
-          subtitle: "Configure notifications and account details",
+          icon: Icons.settings,
+          label: 'Settings',
           onTap: () {
             Navigator.push(
               context,
@@ -282,116 +280,6 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
-      ],
-    );
-  }
-
-
-  Widget _buildMapFilters() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: ['Heatmap', 'Satellite', 'Political'].map((filter) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: FilterChip(
-              label: Text(filter),
-              selected: _selectedMapFilter == filter,
-              onSelected: (selected) {
-                if (selected) setState(() => _selectedMapFilter = filter);
-              },
-              backgroundColor: kCardColor,
-              selectedColor: kAccentColor,
-              labelStyle: TextStyle(color: _selectedMapFilter == filter ? kBackgroundColor : kWhiteColor),
-              checkmarkColor: kBackgroundColor,
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildLastSynced() {
-    final now = DateTime.now();
-    final difference = now.difference(_lastSynced);
-    String timeAgo;
-    if (difference.inSeconds < 60) {
-      timeAgo = 'just now';
-    } else if (difference.inMinutes < 60) {
-      timeAgo = '${difference.inMinutes}m ago';
-    } else {
-      timeAgo = '${difference.inHours}h ago';
-    }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Text('Last updated: $timeAgo', style: kSecondaryBodyTextStyle.copyWith(fontSize: 12)),
-      ],
-    );
-  }
-
-  Widget _buildHeroSection() {
-    return Stack(
-      alignment: Alignment.bottomLeft,
-      children: [
-        Image.asset(
-          'assets/images/satellite_forest.png',
-          height: 350,
-          width: double.infinity,
-          fit: BoxFit.cover,
-        ),
-        Container(
-          height: 350,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.transparent, kBackgroundColor],
-              stops: [0.4, 1.0],
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("Real-time intelligence.", style: kSectionTitleStyle),
-              Text("Zero trees lost.", style: kSectionTitleStyle.copyWith(color: kAccentColor)),
-              const SizedBox(height: 16),
-              Text("Automated satellite analysis to protect our vital ecosystems.", style: kSecondaryBodyTextStyle),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatsSummary() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-      decoration: BoxDecoration(
-        color: kCardColor,
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem("Active Alerts", "23"),
-          _buildStatItem("Regions", "12"),
-          _buildStatItem("Area (ha)", "1.2M"),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String title, String value) {
-    return Column(
-      children: [
-        Text(value, style: kStatValueStyle),
-        const SizedBox(height: 4),
-        Text(title, style: kSecondaryBodyTextStyle),
       ],
     );
   }

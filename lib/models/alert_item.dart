@@ -1,17 +1,23 @@
-enum AlertSeverity { critical, high, medium }
-
+enum AlertSeverity {
+  critical,
+  high,
+  medium,
+  low,
+}
 class AlertItem {
+  final String id;
   final String title;
   final String location;
+  final DateTime date;
   final AlertSeverity severity;
-  final DateTime timestamp;
-  final bool isActive;
+  final bool isArchived;
 
-  const AlertItem({
+  AlertItem({
+    required this.id,
     required this.title,
     required this.location,
+    required this.date,
     required this.severity,
-    required this.timestamp,
-    this.isActive = true,
+    this.isArchived = false,
   });
 }

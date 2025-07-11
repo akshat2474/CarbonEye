@@ -1,110 +1,126 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_heatmap/flutter_map_heatmap.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:carboneye/utils/constants.dart';
-
-class MapPreview extends StatelessWidget {
-  final String selectedLayer;
+class MapPreview extends StatefulWidget {
   final MapController mapController;
-  final List<Marker> watchlistMarkers;
+  final List<Map<String, dynamic>> detections;
 
-  MapPreview({
+  const MapPreview({
     super.key,
-    required this.selectedLayer,
     required this.mapController,
-    required this.watchlistMarkers,
+    this.detections = const [],
   });
 
-  final List<Marker> criticalAlertMarkers = [
-    _buildCriticalMarker(const LatLng(-3.4653, -62.2159)),
-    _buildCriticalMarker(const LatLng(1.0, 114.0)),
-  ];
+  @override
+  MapPreviewState createState() => MapPreviewState();
+}
 
-  final List<WeightedLatLng> heatmapData = [
-    WeightedLatLng(const LatLng(-3.4653, -62.2159), 1.0),
-    WeightedLatLng(const LatLng(-4.0, -63.0), 1.0),
-    WeightedLatLng(const LatLng(1.0, 114.0), 1.0),
-    WeightedLatLng(const LatLng(0.5, 113.5), 1.0),
-    WeightedLatLng(const LatLng(0.5, 23.5), 1.0),
-    WeightedLatLng(const LatLng(0.2, 23.8), 1.0),
-  ];
+class MapPreviewState extends State<MapPreview> {
+  String _selectedLayer = 'Heatmap';
 
-  TileLayer _buildMapLayer(BuildContext context) {
-    switch (selectedLayer) {
+  String _getTileUrl() {
+    switch (_selectedLayer) {
       case 'Satellite':
-        return TileLayer(
-          urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          retinaMode: RetinaMode.isHighDensity(context),
-        );
+        return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
       case 'Political':
-        return TileLayer(
-          urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          subdomains: const ['a', 'b', 'c'],
-          retinaMode: RetinaMode.isHighDensity(context),
-        );
+        return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      case 'Heatmap':
       default:
-        return TileLayer(
-          urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-          subdomains: const ['a', 'b', 'c', 'd'],
-          retinaMode: RetinaMode.isHighDensity(context),
-        );
+        return 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12.0),
-      child: SizedBox(
-        height: 250,
-        child: FlutterMap(
-          mapController: mapController,
-          options: const MapOptions(
-            initialCenter: LatLng(0, 0),
-            initialZoom: 2.0,
-            maxZoom: 18.0,
-          ),
-          children: [
-            _buildMapLayer(context),
-            if (selectedLayer == 'Heatmap')
-              HeatMapLayer(
-                heatMapDataSource: InMemoryHeatMapDataSource(data: heatmapData),
-                heatMapOptions: HeatMapOptions(
-                  gradient: {
-                    0.25: Colors.lightGreen,
-                    0.55: Colors.yellow,
-                    0.85: Colors.orange,
-                    1.0: Colors.red,
-                  },
-                  minOpacity: 0.1,
-                  radius: 30,
-                ),
+    return Column(
+      children: [
+        _buildLayerSelector(),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 300,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15.0),
+            child: FlutterMap(
+              mapController: widget.mapController,
+              options: const MapOptions(
+                initialCenter: LatLng(-3.4653, -62.2159),
+                initialZoom: 7.0,
               ),
-            MarkerLayer(
-              markers: [...criticalAlertMarkers, ...watchlistMarkers],
+              children: [
+                TileLayer(
+                  urlTemplate: _getTileUrl(),
+                  subdomains: const ['a', 'b', 'c'],
+                ),
+                MarkerLayer(
+                  markers: _buildDetectionMarkers(),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
-  static Marker _buildCriticalMarker(LatLng point) {
-    return Marker(
-      width: 24.0,
-      height: 24.0,
-      point: point,
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(102, 244, 67, 54),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.red.shade300, width: 2),
+  List<Marker> _buildDetectionMarkers() {
+    return widget.detections.map((detection) {
+      final center = detection['center_coordinates'];
+      final severity = detection['severity']?.toString().toLowerCase() ?? 'medium';
+      Color markerColor;
+
+      switch (severity) {
+        case 'critical':
+          markerColor = Colors.red.withAlpha((255 * 0.8).round());
+          break;
+        case 'high':
+          markerColor = Colors.orange.withAlpha((255 * 0.8).round());
+          break;
+        default:
+          markerColor = Colors.yellow.withAlpha((255 * 0.8).round());
+      }
+
+      return Marker(
+        width: 24.0,
+        height: 24.0,
+        point: LatLng(center['latitude'], center['longitude']),
+        child: Tooltip(
+          message: 'Severity: $severity\nArea: ${detection['area_ha']} ha',
+          child: Container(
+            decoration: BoxDecoration(
+              color: markerColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+          ),
         ),
-        child: const Center(
-          child: Icon(Icons.warning_amber_rounded, color: kWhiteColor, size: 14),
-        ),
-      ),
+      );
+    }).toList();
+  }
+
+  Widget _buildLayerSelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: ['Heatmap', 'Satellite', 'Political'].map((layer) {
+        final isSelected = _selectedLayer == layer;
+        return GestureDetector(
+          onTap: () => setState(() => _selectedLayer = layer),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.green.shade700 : Colors.grey.shade800,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              layer,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.grey.shade300,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:carboneye/utils/constants.dart';
-
 class DashboardItem extends StatelessWidget {
   final IconData icon;
-  final String title;
-  final String subtitle;
+  final String label;
   final VoidCallback onTap;
 
   const DashboardItem({
-    super.key,
+    super.key, 
     required this.icon,
-    required this.title,
-    required this.subtitle,
+    required this.label,
     required this.onTap,
   });
 
@@ -19,28 +15,22 @@ class DashboardItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12.0),
+      borderRadius: BorderRadius.circular(15.0),
       child: Container(
-        padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: kCardColor,
-          borderRadius: BorderRadius.circular(12.0),
+          color: Colors.grey.shade800,
+          borderRadius: BorderRadius.circular(15.0),
         ),
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: kAccentColor, size: 28),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: kBodyTextStyle.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(subtitle, style: kSecondaryBodyTextStyle),
-                ],
-              ),
+            Icon(icon, size: 32, color: Colors.white),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
-            const Icon(Icons.arrow_forward_ios, color: kSecondaryTextColor, size: 16),
           ],
         ),
       ),
