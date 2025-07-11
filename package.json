@@ -1,0 +1,33 @@
+{
+  "name": "sentinel-hub-image-api",
+  "version": "1.0.0",
+  "description": "Node.js Express API for Sentinel Hub satellite image search and retrieval",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.10"
+  },
+  "keywords": [
+    "sentinel-hub",
+    "satellite",
+    "imagery",
+    "api",
+    "express",
+    "nodejs"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
