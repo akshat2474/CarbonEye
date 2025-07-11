@@ -14,12 +14,11 @@ except ImportError:
     print("Warning: SentinelHub not available. Using mock data for development.")
 
 class SatelliteDataFetcher:
-    def __init__(self, client_id: Optional[str], client_secret: Optional[str], instance_id: Optional[str]):
-        if SENTINELHUB_AVAILABLE and all([client_id, client_secret, instance_id]):
+    def __init__(self, client_id: Optional[str], client_secret: Optional[str]):
+        if SENTINELHUB_AVAILABLE and all([client_id, client_secret]):
             self.config = SHConfig()
             self.config.sh_client_id = client_id
             self.config.sh_client_secret = client_secret
-            self.config.instance_id = instance_id
             self.mock_mode = False
         else:
             self.mock_mode = True

@@ -7,7 +7,6 @@ load_dotenv()
 class Settings:
     SENTINELHUB_CLIENT_ID: Optional[str] = os.getenv("SENTINELHUB_CLIENT_ID")
     SENTINELHUB_CLIENT_SECRET: Optional[str] = os.getenv("SENTINELHUB_CLIENT_SECRET")
-    SENTINELHUB_INSTANCE_ID: Optional[str] = os.getenv("SENTINELHUB_INSTANCE_ID")
     
     # NDVI Thresholds
     NDVI_CHANGE_THRESHOLD: float = float(os.getenv("NDVI_CHANGE_THRESHOLD", "-0.3"))
