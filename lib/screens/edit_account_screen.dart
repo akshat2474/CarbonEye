@@ -26,7 +26,6 @@ class EditAccountScreen extends StatelessWidget {
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
-                // In a real app, this would save the data
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(

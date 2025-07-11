@@ -3,8 +3,8 @@ import 'package:carboneye/models/annotation.dart';
 
 class WatchlistItem {
   final String name;
-  final LatLng coordinates; // For map centering and pins
-  final List<double> bbox;  // For the API analysis call
+  final LatLng coordinates;
+  final List<double> bbox;  
   List<Annotation> annotations;
 
   WatchlistItem({

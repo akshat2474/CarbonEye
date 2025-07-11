@@ -39,7 +39,7 @@ class _AnnotationScreenState extends State<AnnotationScreen> {
         text: _textController.text.trim(),
         timestamp: DateTime.now(),
       );
-      widget.watchlistItem.annotations.insert(0, newAnnotation); // Add to top.
+      widget.watchlistItem.annotations.insert(0, newAnnotation);
       _textController.clear();
       FocusScope.of(context).unfocus();
     });

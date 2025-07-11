@@ -37,18 +37,17 @@ class MapPreview extends StatelessWidget {
         child: FlutterMap(
           mapController: mapController,
           options: const MapOptions(
-            initialCenter: LatLng(-3.4653, -62.2159), // Amazon Rainforest
+            initialCenter: LatLng(-3.4653, -62.2159), 
             initialZoom: 4.0,
             minZoom: 3.0,
             maxZoom: 18.0,
           ),
           children: [
             TileLayer(
-              // FIXED: Adding a unique key forces the widget to rebuild when the layer changes.
               key: ValueKey<String>(selectedLayer),
               urlTemplate: _getTileUrl(),
               subdomains: const ['a', 'b', 'c'],
-              userAgentPackageName: 'com.example.carboneye', // Recommended by flutter_map
+              userAgentPackageName: 'com.example.carboneye', 
             ),
             MarkerLayer(markers: [...watchlistMarkers, ...detectionMarkers]),
           ],

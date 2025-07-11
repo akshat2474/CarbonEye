@@ -25,8 +25,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _notificationService.init();
     _loadPreferences();
   }
-
-  // This method now loads all saved preferences
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -35,7 +33,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  // This method now saves all preferences
   Future<void> _savePreference(String key, bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(key, value);
@@ -168,7 +165,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 30),
-            // The Developer section is now restored
             Text("Developer", style: kSectionTitleStyle.copyWith(fontSize: 22)),
             const SizedBox(height: 16),
             _buildSettingsCard(

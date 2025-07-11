@@ -1,16 +1,17 @@
+import 'package:carboneye/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:carboneye/models/alert_item.dart'; // FIXED: Import the corrected model.
+import 'package:intl/intl.dart';
 
 class AllAlertsScreen extends StatelessWidget {
   final List<Map<String, dynamic>> detections;
 
   const AllAlertsScreen({super.key, required this.detections});
-  
+
   List<AlertItem> _transformDetectionsToAlerts() {
     return detections.map((d) {
       final center = d['center_coordinates'];
       final severityString = d['severity']?.toString().toLowerCase() ?? 'medium';
-    
+      
       AlertSeverity severity;
       switch (severityString) {
         case 'critical':
@@ -29,11 +30,11 @@ class AllAlertsScreen extends StatelessWidget {
 
       return AlertItem(
         id: d['id']?.toString() ?? UniqueKey().toString(),
-        title: 'Deforestation Detected',
-        location: 'Lat: ${center['latitude'].toStringAsFixed(3)}, Lon: ${center['longitude'].toStringAsFixed(3)}',
-        date: DateTime.now(),
+        title: 'Deforestation Event',
+        location: 'Lat: ${center['latitude'].toStringAsFixed(4)}, Lon: ${center['longitude'].toStringAsFixed(4)}',
+        date: DateTime.now(), 
         severity: severity,
-        isArchived: false,
+        area: (d['area_ha'] as num?)?.toDouble() ?? 0.0, 
       );
     }).toList();
   }
@@ -43,28 +44,111 @@ class AllAlertsScreen extends StatelessWidget {
     final List<AlertItem> alerts = _transformDetectionsToAlerts();
     
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: kBackgroundColor,
       appBar: AppBar(
         title: const Text('All Alerts'),
-        backgroundColor: Colors.grey[850],
+        backgroundColor: kBackgroundColor,
         elevation: 0,
+        centerTitle: true,
+        titleTextStyle: kSectionTitleStyle.copyWith(fontSize: 22),
       ),
       body: alerts.isEmpty
-          ? const Center(
-              child: Text(
-                'No alerts found.\nRun an analysis to see results.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontSize: 16),
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
+          ? _buildEmptyState()
+          : ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               itemCount: alerts.length,
               itemBuilder: (context, index) {
                 final alert = alerts[index];
                 return _buildAlertCard(alert);
               },
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
             ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.shield_moon_outlined, size: 80, color: kSecondaryTextColor),
+          const SizedBox(height: 16),
+          Text(
+            'No Alerts Found',
+            style: kSectionTitleStyle.copyWith(fontSize: 20),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Run an analysis to detect new events.',
+            textAlign: TextAlign.center,
+            style: kSecondaryBodyTextStyle,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAlertCard(AlertItem alert) {
+    final Color severityColor = _getSeverityColor(alert.severity);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: kCardColor,
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border(left: BorderSide(color: severityColor, width: 5)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  alert.severity.name.toUpperCase(),
+                  style: kBodyTextStyle.copyWith(
+                    color: severityColor,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                if (alert.area > 0)
+                  Text(
+                    '${alert.area.toStringAsFixed(2)} ha',
+                    style: kBodyTextStyle.copyWith(
+                      color: kAccentColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+              ],
+            ),
+            const Divider(color: kBackgroundColor, height: 24),
+            Text(
+              alert.title,
+              style: kBodyTextStyle.copyWith(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.location_on_outlined, color: kSecondaryTextColor, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(alert.location, style: kSecondaryBodyTextStyle, overflow: TextOverflow.ellipsis),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.calendar_today_outlined, color: kSecondaryTextColor, size: 16),
+                const SizedBox(width: 8),
+                Text(DateFormat.yMMMd().add_jm().format(alert.date), style: kSecondaryBodyTextStyle),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -75,75 +159,30 @@ class AllAlertsScreen extends StatelessWidget {
       case AlertSeverity.high:
         return Colors.orange.shade400;
       case AlertSeverity.medium:
-      default:
+      case AlertSeverity.low:
         return Colors.yellow.shade400;
     }
   }
+}
 
-  Widget _buildAlertCard(AlertItem alert) {
-    return Card(
-      color: alert.isArchived ? Colors.grey.shade800 : Colors.grey[850], // FIXED: Correct shade syntax.
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-        side: BorderSide(
-          color: _getSeverityColor(alert.severity),
-          width: 2,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              alert.title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: alert.isArchived ? Colors.grey.shade400 : Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.location_on, color: Colors.grey.shade400, size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  alert.location,
-                  style: TextStyle(color: Colors.grey.shade400),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(Icons.calendar_today, color: Colors.grey.shade400, size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  '${alert.date.day}/${alert.date.month}/${alert.date.year}',
-                  style: TextStyle(color: Colors.grey.shade400),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: _getSeverityColor(alert.severity).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                'Severity: ${alert.severity.name}', // Use .name to get the string from enum
-                style: TextStyle(
-                  color: _getSeverityColor(alert.severity),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+enum AlertSeverity { critical, high, medium, low }
+
+class AlertItem {
+  final String id;
+  final String title;
+  final String location;
+  final DateTime date;
+  final AlertSeverity severity;
+  final bool isArchived;
+  final double area;
+
+  AlertItem({
+    required this.id,
+    required this.title,
+    required this.location,
+    required this.date,
+    required this.severity,
+    this.isArchived = false,
+    this.area = 0.0, 
+  });
 }

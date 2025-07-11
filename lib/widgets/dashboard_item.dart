@@ -1,8 +1,6 @@
 import 'package:carboneye/utils/constants.dart';
 import 'package:flutter/material.dart';
 
-/// A custom list item widget for the dashboard section.
-/// This version is updated to match the design of your original home screen.
 class DashboardItem extends StatelessWidget {
   final IconData icon;
   final String title;
