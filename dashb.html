@@ -65,9 +65,6 @@
           <button class="map-btn" onclick="setMapView('political')">
             Political
           </button>
-          <button class="map-btn" onclick="toggleDeforestation()">
-            <span id="deforestation-toggle">Show Deforestation</span>
-          </button>
         </div>
         <div class="map-container">
           <div class="map-placeholder" id="map"></div>
@@ -125,23 +122,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Analysis Results Panel -->
-      <div class="analysis-panel" id="analysis-panel">
-        <div class="analysis-header">
-          <h3>Analysis Results</h3>
-          <button class="close-btn" onclick="closeAnalysis()">×</button>
-        </div>
-        <div class="analysis-content" id="analysis-content">
-          <!-- Results will be populated here -->
-        </div>
-      </div>
-
-      <!-- Loading Overlay -->
-      <div class="loading-overlay" id="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p>Analyzing deforestation data...</p>
-      </div>
     </div>
 
     <!-- Leaflet CSS & JS -->
@@ -179,11 +159,6 @@
       let selectedCountries = JSON.parse(
         localStorage.getItem("selectedCountries") || "[]"
       );
-
-      // Deforestation data storage
-      let deforestationLayer = null;
-      let deforestationData = null;
-      let showingDeforestation = false;
 
       // Save to localStorage
       function saveSelectedCountries() {
@@ -238,219 +213,6 @@
             },
           }).addTo(map);
         });
-
-      // Get color based on severity
-      function getSeverityColor(severity) {
-        switch (severity) {
-          case "Critical":
-            return "#8B0000"; // Dark red
-          case "High":
-            return "#FF0000"; // Red
-          case "Medium":
-            return "#FF8C00"; // Orange
-          default:
-            return "#32CD32"; // Green
-        }
-      }
-
-      // Get opacity based on confidence
-      function getConfidenceOpacity(confidence) {
-        return Math.max(0.4, confidence * 0.8);
-      }
-
-      // Create deforestation markers
-      function createDeforestationLayer(data) {
-        if (deforestationLayer) {
-          map.removeLayer(deforestationLayer);
-        }
-
-        deforestationLayer = L.layerGroup();
-
-        if (data && data.detections) {
-          data.detections.forEach((detection) => {
-            const { geographic_bbox, center_coordinates, severity, confidence, avg_ndvi_change, area_pixels } = detection;
-            
-            // Create rectangle for detection area
-            const bounds = [
-              [geographic_bbox.min_lat, geographic_bbox.min_lon],
-              [geographic_bbox.max_lat, geographic_bbox.max_lon]
-            ];
-
-            const rectangle = L.rectangle(bounds, {
-              color: getSeverityColor(severity),
-              weight: 2,
-              fillColor: getSeverityColor(severity),
-              fillOpacity: getConfidenceOpacity(confidence),
-              opacity: 0.8
-            });
-
-            // Add popup with detection details
-            const popupContent = `
-              <div class="detection-popup">
-                <h4>Deforestation Detection</h4>
-                <p><strong>Severity:</strong> ${severity}</p>
-                <p><strong>Confidence:</strong> ${(confidence * 100).toFixed(1)}%</p>
-                <p><strong>NDVI Change:</strong> ${avg_ndvi_change.toFixed(3)}</p>
-                <p><strong>Area:</strong> ${area_pixels} pixels</p>
-                <p><strong>Location:</strong> ${center_coordinates.latitude.toFixed(4)}, ${center_coordinates.longitude.toFixed(4)}</p>
-              </div>
-            `;
-
-            rectangle.bindPopup(popupContent);
-            deforestationLayer.addLayer(rectangle);
-          });
-        }
-
-        return deforestationLayer;
-      }
-
-      // Toggle deforestation layer
-      function toggleDeforestation() {
-        const toggleBtn = document.getElementById('deforestation-toggle');
-        
-        if (showingDeforestation) {
-          if (deforestationLayer) {
-            map.removeLayer(deforestationLayer);
-          }
-          showingDeforestation = false;
-          toggleBtn.textContent = 'Show Deforestation';
-        } else {
-          if (deforestationData) {
-            const layer = createDeforestationLayer(deforestationData);
-            map.addLayer(layer);
-            showingDeforestation = true;
-            toggleBtn.textContent = 'Hide Deforestation';
-          } else {
-            alert('No deforestation data available. Please analyze a region first.');
-          }
-        }
-      }
-
-      // Show loading overlay
-      function showLoading() {
-        document.getElementById('loading-overlay').style.display = 'flex';
-      }
-
-      // Hide loading overlay
-      function hideLoading() {
-        document.getElementById('loading-overlay').style.display = 'none';
-      }
-
-      // Show analysis results
-      function showAnalysisResults(data) {
-        const panel = document.getElementById('analysis-panel');
-        const content = document.getElementById('analysis-content');
-        
-        const summary = data.summary;
-        const detections = data.detections;
-        
-        // Count by severity
-        const severityCount = detections.reduce((acc, det) => {
-          acc[det.severity] = (acc[det.severity] || 0) + 1;
-          return acc;
-        }, {});
-
-        content.innerHTML = `
-          <div class="analysis-summary">
-            <h4>Analysis Summary</h4>
-            <div class="summary-stats">
-              <div class="stat">
-                <span class="stat-label">Total Detections:</span>
-                <span class="stat-value">${summary.total_detections}</span>
-              </div>
-              <div class="stat">
-                <span class="stat-label">Area Analyzed:</span>
-                <span class="stat-value">${summary.area_analyzed_km2.toLocaleString()} km²</span>
-              </div>
-              <div class="stat">
-                <span class="stat-label">Change Percentage:</span>
-                <span class="stat-value">${summary.change_percentage}%</span>
-              </div>
-            </div>
-            
-            <h4>Severity Breakdown</h4>
-            <div class="severity-breakdown">
-              ${Object.entries(severityCount).map(([severity, count]) => `
-                <div class="severity-item">
-                  <span class="severity-color" style="background-color: ${getSeverityColor(severity)}"></span>
-                  <span class="severity-label">${severity}:</span>
-                  <span class="severity-count">${count}</span>
-                </div>
-              `).join('')}
-            </div>
-            
-            <p class="analysis-note">
-              ${detections.length} detections are shown on the map. 
-              Toggle the "Show Deforestation" button to view them.
-            </p>
-          </div>
-        `;
-        
-        panel.style.display = 'block';
-      }
-
-      // Close analysis panel
-      function closeAnalysis() {
-        document.getElementById('analysis-panel').style.display = 'none';
-      }
-
-      // Analyze region function
-      async function analyzeRegion() {
-        showLoading();
-        
-        try {
-          const response = await fetch('http://127.0.0.1:8000/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              bbox_coordinates: [10.8, 0.0, 18.9, 3.3],
-              days_back: 10,
-              resolution: 60
-            })
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const data = await response.json();
-          
-          if (data.success) {
-            deforestationData = data;
-            showAnalysisResults(data);
-            
-            // Zoom to analyzed area
-            const bounds = [
-              [0.0, 10.8],
-              [3.3, 18.9]
-            ];
-            map.fitBounds(bounds);
-            
-            // Auto-show deforestation if not already showing
-            if (!showingDeforestation) {
-              toggleDeforestation();
-            }
-          } else {
-            alert('Analysis failed: ' + data.message);
-          }
-        } catch (error) {
-          console.error('Error analyzing region:', error);
-          alert('Failed to analyze region. Please check if the API server is running.');
-        } finally {
-          hideLoading();
-        }
-      }
-
-      // Other dashboard functions
-      function viewAlerts() {
-        console.log("Viewing alerts...");
-      }
-
-      function generateReport() {
-        console.log("Generating report...");
-      }
 
       // Map view toggle button logic
       function setMapView(view) {
