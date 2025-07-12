@@ -15,8 +15,9 @@ Your repository should have this structure:
 │   │   ├── api/
 │   │   ├── core/
 │   │   └── ml/
-│   ├── requirements.txt
-│   └── Dockerfile
+│   └── requirements.txt
+├── main.py
+├── requirements.txt
 ├── render.yaml
 └── DEPLOYMENT.md
 ```
@@ -37,8 +38,8 @@ Your repository should have this structure:
 4. Configure the service:
    - **Name**: `carbon-eye-api`
    - **Environment**: `Python`
-   - **Build Command**: `pip install -r backend/requirements.txt`
-   - **Start Command**: `cd backend && gunicorn app.main:app --bind 0.0.0.0:$PORT --workers 1 --worker-class uvicorn.workers.UvicornWorker`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn main:app --bind 0.0.0.0:$PORT --workers 1 --worker-class uvicorn.workers.UvicornWorker`
    - **Plan**: Free
 
 ### 3. Environment Variables
@@ -74,6 +75,7 @@ Once deployed, test these endpoints:
 2. **Service won't start**: Verify start command and port configuration
 3. **Environment variables**: Ensure all required env vars are set
 4. **Memory issues**: Free tier has 512MB limit, optimize if needed
+5. **Import errors**: Make sure main.py can import from backend.app.main
 
 ### Logs:
 - Check build logs in Render dashboard
