@@ -38,7 +38,7 @@ Your repository should have this structure:
    - **Name**: `carbon-eye-api`
    - **Environment**: `Python`
    - **Build Command**: `pip install -r backend/requirements.txt`
-   - **Start Command**: `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - **Start Command**: `cd backend && gunicorn app.main:app --bind 0.0.0.0:$PORT --workers 1 --worker-class uvicorn.workers.UvicornWorker`
    - **Plan**: Free
 
 ### 3. Environment Variables
