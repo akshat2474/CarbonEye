@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Environmental Dashboard</title>
+    <link rel="icon" type="image/png" href="assets/final1.png" />
+    <link rel="stylesheet" href="dashb.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <h1>My Dashboard</h1>
+      </div>
+
+      <!-- Watchlist Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">My Watchlist</h2>
+          <button class="add-btn" onclick="addToWatchlist()">+ Add</button>
+        </div>
+
+        <div class="watchlist-grid">
+          <div class="watchlist-item" onclick="selectWatchlistItem(this)">
+            <div class="watchlist-content">
+              <div class="watchlist-icon"></div>
+              <div class="watchlist-text">Amazonas, Brazil</div>
+            </div>
+            <div class="arrow"></div>
+          </div>
+          <div class="watchlist-item" onclick="selectWatchlistItem(this)">
+            <div class="watchlist-content">
+              <div class="watchlist-icon"></div>
+              <div class="watchlist-text">Congo Basin, DRC</div>
+            </div>
+            <div class="arrow"></div>
+          </div>
+          <div
+            class="watchlist-item active"
+            onclick="selectWatchlistItem(this)"
+          >
+            <div class="watchlist-content">
+              <div class="watchlist-icon active"></div>
+              <div class="watchlist-text">Borneo, Indonesia</div>
+            </div>
+            <div class="arrow"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Global Deforestation Hotspots</h2>
+        </div>
+        <div class="map-controls">
+          <button class="map-btn active" onclick="setMapView('heatmap')">
+            Heatmap
+          </button>
+          <button class="map-btn" onclick="setMapView('satellite')">
+            Satellite
+          </button>
+          <button class="map-btn" onclick="setMapView('political')">
+            Political
+          </button>
+        </div>
+        <div class="map-container">
+          <div class="map-placeholder" id="map"></div>
+        </div>
+      </div>
+
+      <!-- Dashboard Section -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Actions</h2>
+        </div>
+        <div class="dashboard-grid">
+          <div class="dashboard-item" onclick="analyzeRegion()">
+            <div class="dashboard-icon">
+              <img
+                src="assets/target.svg"
+                alt="Target Icon"
+                width="24"
+                height="24"
+                style="color: #fff"
+              />
+            </div>
+            <div class="dashboard-content">
+              <h3>Analyze New Region</h3>
+              <p>Select an area for one-time analysis</p>
+            </div>
+          </div>
+          <div class="dashboard-item" onclick="viewAlerts()">
+            <div class="dashboard-icon">
+              <img
+                src="assets/bell.svg"
+                alt="Bell Icon"
+                width="24"
+                height="24"
+              />
+            </div>
+            <div class="dashboard-content">
+              <h3>View All Alerts</h3>
+              <p>Review active and past deforestation events</p>
+            </div>
+          </div>
+          <div class="dashboard-item" onclick="generateReport()">
+            <div class="dashboard-icon">
+              <img
+                src="assets/chart.svg"
+                alt="Chart Icon"
+                width="24"
+                height="24"
+              />
+            </div>
+            <div class="dashboard-content">
+              <h3>Generate Report</h3>
+              <p>Create a detailed ESG or impact report</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaflet CSS & JS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+      // Navigation Functions
+      function goBack() {
+        console.log("Going back...");
+        window.history.back();
+      }
+
+      // Watchlist Functions
+      function addToWatchlist() {
+        console.log("Adding to watchlist...");
+      }
+
+      const map = L.map("map").setView([20, 0], 2);
+
+      // Dark tile layer
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        {
+          attribution: "&copy; CartoDB",
+          subdomains: "abcd",
+          maxZoom: 19,
+        }
+      ).addTo(map);
+
+      // Load selected countries from localStorage
+      let selectedCountries = JSON.parse(
+        localStorage.getItem("selectedCountries") || "[]"
+      );
+
+      // Save to localStorage
+      function saveSelectedCountries() {
+        localStorage.setItem(
+          "selectedCountries",
+          JSON.stringify(selectedCountries)
+        );
+      }
+
+      // Load country GeoJSON
+      fetch(
+        "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json"
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          L.geoJSON(data, {
+            style: (feature) => {
+              const iso = feature.id;
+              const isSelected = selectedCountries.includes(iso);
+              return {
+                color: isSelected ? "#27ae60" : "#444",
+                weight: 1,
+                fillColor: isSelected ? "#27ae60" : "#1c1c1c",
+                fillOpacity: 0.7,
+              };
+            },
+            onEachFeature: (feature, layer) => {
+              const iso = feature.id;
+
+              layer.on("click", () => {
+                const index = selectedCountries.indexOf(iso);
+                const isSelected = index > -1;
+
+                if (isSelected) {
+                  selectedCountries.splice(index, 1); // remove
+                } else {
+                  selectedCountries.push(iso); // add
+                }
+
+                saveSelectedCountries();
+
+                // Update style
+                layer.setStyle({
+                  color: isSelected ? "#444" : "#27ae60",
+                  fillColor: isSelected ? "#1c1c1c" : "#27ae60",
+                  fillOpacity: 0.7,
+                  weight: 1,
+                });
+              });
+
+              layer.bindTooltip(feature.properties.name);
+            },
+          }).addTo(map);
+        });
+
+      // Map view toggle button logic
+      function setMapView(view) {
+        document.querySelectorAll(".map-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+
+        event.target.classList.add("active");
+        console.log("Map view changed to:", view);
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("Environmental Dashboard loaded");
+      });
+    </script>
+  </body>
+</html>
