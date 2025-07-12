@@ -77,6 +77,7 @@ async def analyze_deforestation(
         logger.info(f"Starting analysis for bbox: {request.bbox_coordinates}")
         
         # Validate bounding box
+        global min_lon,min_lat,max_lon,max_lat
         min_lon, min_lat, max_lon, max_lat = request.bbox_coordinates
         if min_lon >= max_lon or min_lat >= max_lat:
             raise HTTPException(
@@ -148,6 +149,9 @@ async def analyze_deforestation(
                 'high_confidence_detections': len([d for d in detections if d['confidence'] > 0.8]),
                 'critical_detections': len([d for d in detections if d['severity'] == 'Critical']),
                 'area_analyzed_km2': round(
+                    abs((max_lon - min_lon) * (max_lat - min_lat)) * 111.32 * 111.32, 2
+                ),
+                'area_affected':round(change_results['change_percentage'], 2) * round(
                     abs((max_lon - min_lon) * (max_lat - min_lat)) * 111.32 * 111.32, 2
                 )
             },
@@ -368,6 +372,9 @@ async def analyze_with_images(
                     "total_detections": len(detections),
                     "total_changed_pixels": change_results['total_changed_pixels'],
                     "change_percentage": round(change_results['change_percentage'], 2),
+                    'area_affected':round(change_results['change_percentage'], 2) * round(
+                    abs((max_lon - min_lon) * (max_lat - min_lat)) * 111.32 * 111.32, 2
+                ),
                     "high_confidence_detections": len([d for d in detections if d['confidence'] > 0.8])
                 }
             },

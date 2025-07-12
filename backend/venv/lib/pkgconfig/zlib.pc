@@ -1,0 +1,13 @@
+prefix=/Users/akshat/Desktop/Apps/CarbonEye/carbon_eye/backend/venv
+exec_prefix=/Users/akshat/Desktop/Apps/CarbonEye/carbon_eye/backend/venv
+libdir=/Users/akshat/Desktop/Apps/CarbonEye/carbon_eye/backend/venv/lib
+sharedlibdir=/Users/akshat/Desktop/Apps/CarbonEye/carbon_eye/backend/venv/lib
+includedir=/Users/akshat/Desktop/Apps/CarbonEye/carbon_eye/backend/venv/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.13
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}

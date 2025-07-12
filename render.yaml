@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: carbon-eye-api
+    name: carbon-eye-api-2
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
