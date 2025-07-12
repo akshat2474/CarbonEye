@@ -143,6 +143,26 @@
         console.log("Adding to watchlist...");
       }
 
+      function selectWatchlistItem(element) {
+        // Remove active class from all watchlist items
+        document.querySelectorAll('.watchlist-item').forEach(item => {
+          item.classList.remove('active');
+          const icon = item.querySelector('.watchlist-icon');
+          if (icon) {
+            icon.classList.remove('active');
+          }
+        });
+
+        // Add active class to clicked item
+        element.classList.add('active');
+        const icon = element.querySelector('.watchlist-icon');
+        if (icon) {
+          icon.classList.add('active');
+        }
+
+        console.log('Selected watchlist item:', element.querySelector('.watchlist-text').textContent);
+      }
+
       const map = L.map("map").setView([20, 0], 2);
 
       // Dark tile layer
