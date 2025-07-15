@@ -53,7 +53,8 @@ graph TD
     APIGateway -- "Deliver to User" --> User
     AnalysisService -- "Trigger Alert" --> NotificationService
     NotificationService -- "Send Email" --> EmailProvider
-    ```
+    
+```
     
 
 
