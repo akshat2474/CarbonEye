@@ -32,6 +32,26 @@ def get_change_detector():
         confidence_threshold=settings.CONFIDENCE_THRESHOLD
     )
 
+def ensure_json_serializable(data):
+    """
+    Recursively convert NumPy types to Python native types for JSON serialization
+    """
+    if isinstance(data, dict):
+        return {key: ensure_json_serializable(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [ensure_json_serializable(item) for item in data]
+    elif isinstance(data, np.integer):
+        return int(data)
+    elif isinstance(data, np.floating):
+        return float(data)
+    elif isinstance(data, np.bool_):
+        return bool(data)
+    elif isinstance(data, np.ndarray):
+        return data.tolist()
+    else:
+        return data
+
+
 # Pydantic models for API
 class AnalysisRequest(BaseModel):
     bbox_coordinates: List[float] = Field(..., min_length=4, max_length=4)
@@ -388,4 +408,80 @@ async def analyze_with_images(
         raise HTTPException(
             status_code=500,
             detail=f"Combined analysis failed: {str(e)}"
+        )
+
+@router.post("/analyze-with-cloud-info", response_model=Dict[str, Any])
+async def analyze_with_cloud_awareness(
+    request: AnalysisRequest,
+    satellite_fetcher: SatelliteDataFetcher = Depends(get_satellite_fetcher),
+    ndvi_processor: NDVIProcessor = Depends(get_ndvi_processor),
+    change_detector: ChangeDetector = Depends(get_change_detector)
+):
+    """
+    Enhanced analysis with cloud awareness and quality assessment
+    """
+    try:
+        # Fetch cloud-aware time series data
+        t0_data, t1_data = satellite_fetcher.get_cloud_aware_time_series(
+            request.bbox_coordinates,
+            request.days_back
+        )
+        
+        # Preprocess with cloud masking
+        t0_processed = ndvi_processor.preprocess_image(t0_data)
+        t1_processed = ndvi_processor.preprocess_image(t1_data)
+        
+        # Calculate NDVI with cloud masks
+        ndvi_t0, cloud_mask_t0 = ndvi_processor.calculate_ndvi_with_cloud_mask(t0_processed)
+        ndvi_t1, cloud_mask_t1 = ndvi_processor.calculate_ndvi_with_cloud_mask(t1_processed)
+        
+        # Assess image quality
+        quality_t0 = ndvi_processor.assess_image_quality(t0_processed, cloud_mask_t0)
+        quality_t1 = ndvi_processor.assess_image_quality(t1_processed, cloud_mask_t1)
+        
+        # Detect changes with cloud awareness
+        change_results = change_detector.detect_changes_with_cloud_mask(
+            ndvi_t0, ndvi_t1, cloud_mask_t0, cloud_mask_t1
+        )
+        
+        # Convert to geographic coordinates
+        detections = change_detector.convert_pixel_to_coordinates(
+            change_results['detections'],
+            request.bbox_coordinates,
+            ndvi_t0.shape
+        )
+        
+        # Enhanced response with cloud information
+        response = {
+            "analysis": {
+                "success": True,
+                "timestamp": datetime.now().isoformat(),
+                "detections": detections,
+                "summary": {
+                    "total_detections": len(detections),
+                    "total_changed_pixels": change_results['total_changed_pixels'],
+                    "total_valid_pixels": change_results['total_valid_pixels'],
+                    "change_percentage": round(change_results['change_percentage'], 2),
+                    "high_confidence_detections": len([d for d in detections if d['confidence'] > 0.8])
+                }
+            },
+            "cloud_info": {
+                "t0_cloud_coverage": round(change_results['cloud_coverage_t0'], 2),
+                "t1_cloud_coverage": round(change_results['cloud_coverage_t1'], 2),
+                "t0_quality": quality_t0,
+                "t1_quality": quality_t1,
+                "analysis_reliability": "High" if (quality_t0['overall_quality_score'] > 70 and 
+                                                 quality_t1['overall_quality_score'] > 70) else "Medium"
+            }
+        }
+        
+        # ✅ Ensure all data is JSON serializable
+        response = ensure_json_serializable(response)
+        
+        return response
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Cloud-aware analysis failed: {str(e)}"
         )

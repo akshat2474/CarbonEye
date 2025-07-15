@@ -122,7 +122,7 @@ class SatelliteDataFetcher:
         
         end_date = datetime.now()
         start_date_t1 = end_date - timedelta(days=3)
-        
+
         start_date_t0 = end_date - timedelta(days=days_back + 3)
         end_date_t0 = end_date - timedelta(days=days_back)
         
@@ -254,3 +254,151 @@ class SatelliteDataFetcher:
         img_str = base64.b64encode(buffer.getvalue()).decode()
         
         return f"data:image/png;base64,{img_str}"
+
+    def get_cloud_filtered_evalscript(self) -> str:
+        """
+        Enhanced evalscript with cloud masking capabilities
+        """
+        return """
+        //VERSION=3
+        function setup() {
+            return {
+                input: [{
+                    bands: ["B04", "B08", "B02", "B03", "B09", "B11", "SCL"],
+                    units: "DN"
+                }],
+                output: { 
+                    bands: 5,
+                    sampleType: "FLOAT32"
+                }
+            };
+        }
+        
+        function evaluatePixel(sample) {
+            // Use Scene Classification Layer (SCL) for cloud masking
+            // SCL values: 4=vegetation, 5=not-vegetated, 6=water, 7=unclassified
+            // 8=cloud medium probability, 9=cloud high probability, 10=thin cirrus, 11=snow
+            
+            let validPixel = (sample.SCL == 4 || sample.SCL == 5 || sample.SCL == 6 || sample.SCL == 11);
+            
+            if (!validPixel) {
+                return [0, 0, 0, 0, 0]; // Return null values for cloudy pixels
+            }
+            
+            return [sample.B04, sample.B08, sample.B02, sample.B03, 1]; // Last band indicates valid pixel
+        }
+        """
+
+    def fetch_cloud_free_data(self, bbox_coords: List[float], start_date: datetime, 
+                            end_date: datetime, resolution: int = 60, max_cloud_cover: int = 20) -> np.ndarray:
+        """
+        Fetch cloud-filtered satellite data with multiple attempts
+        """
+        if self.mock_mode:
+            return self._generate_mock_data()
+
+        bbox = BBox(bbox=bbox_coords, crs=CRS.WGS84)
+        size = bbox_to_dimensions(bbox, resolution=resolution)
+        
+        # Limit size for performance
+        if size[0] > 2048 or size[1] > 2048:
+            size = (min(size[0], 2048), min(size[1], 2048))
+
+        # Try multiple time windows to find cloud-free data
+        attempts = 0
+        max_attempts = 5
+        current_start = start_date
+        current_end = end_date
+        
+        while attempts < max_attempts:
+            try:
+                request = SentinelHubRequest(
+                    evalscript=self.get_cloud_filtered_evalscript(),
+                    input_data=[
+                        SentinelHubRequest.input_data(
+                            data_collection=DataCollection.SENTINEL2_L2A,
+                            time_interval=(current_start, current_end),
+                            mosaicking_order='leastCC',
+                            maxcc=max_cloud_cover/100.0  # Maximum cloud coverage
+                        )
+                    ],
+                    responses=[
+                        SentinelHubRequest.output_response('default', MimeType.TIFF)
+                    ],
+                    bbox=bbox,
+                    size=size,
+                    config=self.config
+                )
+                
+                response = request.get_data()
+                
+                if response and len(response) > 0:
+                    data = response[0].astype(np.float32)
+                    
+                    # Check if we have enough valid pixels (non-zero in last band)
+                    valid_pixel_ratio = np.sum(data[:, :, 4] > 0) / (data.shape[0] * data.shape[1])
+                    
+                    if valid_pixel_ratio > 0.3:  # At least 30% valid pixels
+                        return data[:, :, :4]  # Return only the spectral bands
+                    
+                # If not enough valid pixels, try expanding the time window
+                attempts += 1
+                window_expansion = timedelta(days=3 * attempts)
+                current_start = start_date - window_expansion
+                current_end = end_date + window_expansion
+                
+            except Exception as e:
+                attempts += 1
+                if attempts >= max_attempts:
+                    raise Exception(f"Failed to fetch cloud-free data after {max_attempts} attempts: {str(e)}")
+        
+        raise Exception("No cloud-free data available for the specified parameters")
+
+    def get_cloud_aware_time_series(self, bbox_coords: List[float], days_back: int = 10) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Get cloud-aware time series data with multiple fallback options
+        """
+        end_date = datetime.now()
+        
+        # Try multiple time windows to find cloud-free images
+        time_windows = [
+            (days_back, 3),      # Original window
+            (days_back + 5, 3),  # Extended past window
+            (days_back, 7),      # Extended recent window
+            (days_back + 10, 7), # Both extended
+            (days_back + 15, 10) # Maximum extension
+        ]
+        
+        for past_days, recent_days in time_windows:
+            try:
+                start_date_t1 = end_date - timedelta(days=recent_days)
+                start_date_t0 = end_date - timedelta(days=past_days + recent_days)
+                end_date_t0 = end_date - timedelta(days=past_days)
+                
+                print(f"Trying time window: T0({start_date_t0.strftime('%Y-%m-%d')} to {end_date_t0.strftime('%Y-%m-%d')}) vs T1({start_date_t1.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')})")
+                
+                # Fetch with cloud filtering
+                t1_data = self.fetch_cloud_free_data(bbox_coords, start_date_t1, end_date, max_cloud_cover=30)
+                t0_data = self.fetch_cloud_free_data(bbox_coords, start_date_t0, end_date_t0, max_cloud_cover=30)
+                
+                print(f"✅ Successfully found cloud-free data for time window")
+                return t0_data, t1_data
+                
+            except Exception as e:
+                print(f"❌ Failed for time window: {str(e)}")
+                continue
+        
+        # If all attempts fail, try with higher cloud tolerance
+        print("⚠️ Attempting with higher cloud tolerance...")
+        try:
+            start_date_t1 = end_date - timedelta(days=7)
+            start_date_t0 = end_date - timedelta(days=days_back + 7)
+            end_date_t0 = end_date - timedelta(days=days_back)
+            
+            t1_data = self.fetch_cloud_free_data(bbox_coords, start_date_t1, end_date, max_cloud_cover=60)
+            t0_data = self.fetch_cloud_free_data(bbox_coords, start_date_t0, end_date_t0, max_cloud_cover=60)
+            
+            return t0_data, t1_data
+            
+        except Exception as e:
+            raise Exception(f"No suitable cloud-free data available: {str(e)}")
