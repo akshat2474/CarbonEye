@@ -1,3 +1,5 @@
+// lib/screens/home_screen.dart
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
@@ -42,14 +44,34 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _t1ImageBase64;
 
   final List<WatchlistItem> _watchlistRegions = [
-    WatchlistItem(name: 'Amazonas, Brazil', coordinates: const LatLng(-3.46, -62.21), bbox: [-62.2159, -3.4653, -62.1159, -3.3653], annotations: [Annotation(id: '1', text: "Initial area of concern noted.", timestamp: DateTime.now())]),
-    WatchlistItem(name: 'Congo Basin, DRC', coordinates: const LatLng(0.5, 23.5), bbox: [17.9416, 0.4598, 18.1416, 0.6598]),
-    WatchlistItem(name: 'Borneo, Indonesia', coordinates: const LatLng(1.0, 114.0), bbox: [113.9, 0.9, 114.1, 1.1]),
+    WatchlistItem(name: 'Amazonas, Brazil', coordinates: const LatLng(-3.46, -62.21), bbox: [-62.41, -3.66, -62.01, -3.26]),
+    WatchlistItem(name: 'Jim Corbett National Park, India', coordinates: const LatLng(29.53, 78.77), bbox: [78.57, 29.33, 78.97, 29.73]),
+    WatchlistItem(name: 'Congo Basin, DRC', coordinates: const LatLng(0.5, 23.5), bbox: [23.3, 0.3, 23.7, 0.7]),
+    WatchlistItem(name: 'Serengeti National Park, Tanzania', coordinates: const LatLng(-2.33, 34.83), bbox: [34.63, -2.53, 35.03, -2.13]),
+    WatchlistItem(name: 'Sundarbans National Park, India', coordinates: const LatLng(21.94, 88.85), bbox: [88.65, 21.74, 89.05, 22.14]),
   ];
+
   final Map<String, dynamic> _availableForestsData = {
-    'Sumatra, Indonesia': {'coordinates': const LatLng(0.5897, 101.3431), 'bbox': [101.2431, 0.4897, 101.4431, 0.6897]},
-    'New Guinea': {'coordinates': const LatLng(-5.5, 141.5), 'bbox': [141.0, -6.0, 142.0, -5.0]},
-    'Madagascar': {'coordinates': const LatLng(-18.9, 47.5), 'bbox': [47.0, -19.4, 48.0, -18.4]},
+    // India
+    'Ranthambore National Park, India': {'coordinates': const LatLng(26.01, 76.50), 'bbox': [76.30, 25.81, 76.70, 26.21]},
+    'Kanha National Park, India': {'coordinates': const LatLng(22.33, 80.63), 'bbox': [80.43, 22.13, 80.83, 22.53]},
+    'Bandipur National Park, India': {'coordinates': const LatLng(11.66, 76.63), 'bbox': [76.43, 11.46, 76.83, 11.86]},
+    'Kaziranga National Park, India': {'coordinates': const LatLng(26.66, 93.35), 'bbox': [93.15, 26.46, 93.55, 26.86]},
+    'Gir National Park, India': {'coordinates': const LatLng(21.16, 70.79), 'bbox': [70.59, 20.96, 70.99, 21.36]},
+    'Periyar Wildlife Sanctuary, India': {'coordinates': const LatLng(9.46, 77.14), 'bbox': [76.94, 9.26, 77.34, 9.66]},
+    'Western Ghats, India': {'coordinates': const LatLng(10.0, 77.0), 'bbox': [76.8, 9.8, 77.2, 10.2]},
+
+    // World
+    'Borneo, Indonesia': {'coordinates': const LatLng(1.0, 114.0), 'bbox': [113.8, 0.8, 114.2, 1.2]},
+    'Kruger National Park, South Africa': {'coordinates': const LatLng(-23.98, 31.55), 'bbox': [31.35, -24.18, 31.75, -23.78]},
+    'Yellowstone National Park, USA': {'coordinates': const LatLng(44.42, -110.58), 'bbox': [-110.78, 44.22, -110.38, 44.62]},
+    'Galápagos Islands, Ecuador': {'coordinates': const LatLng(-0.95, -90.96), 'bbox': [-91.16, -1.15, -90.76, -0.75]},
+    'Daintree Rainforest, Australia': {'coordinates': const LatLng(-16.17, 145.42), 'bbox': [145.22, -16.37, 145.62, -15.97]},
+    'Valdivian Rainforest, Chile': {'coordinates': const LatLng(-39.88, -73.24), 'bbox': [-73.44, -40.08, -73.04, -39.68]},
+    'Kinabalu Park, Malaysia': {'coordinates': const LatLng(6.07, 116.54), 'bbox': [116.34, 5.87, 116.74, 6.27]},
+    'Sumatra, Indonesia': {'coordinates': const LatLng(0.58, 101.34), 'bbox': [101.14, 0.38, 101.54, 0.78]},
+    'New Guinea': {'coordinates': const LatLng(-5.5, 141.5), 'bbox': [141.3, -5.7, 141.7, -5.3]},
+    'Madagascar': {'coordinates': const LatLng(-18.9, 47.5), 'bbox': [47.3, -19.1, 47.7, -18.7]},
   };
 
   Future<void> _runAnalysis(WatchlistItem item) async {
@@ -68,7 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final analysisData = result['analysis'];
       final imageData = result['images'];
 
-      final newDetections = List<Map<String, dynamic>>.from(analysisData['detections']);
+      // Safely parse detections, defaulting to an empty list
+      final newDetections = List<Map<String, dynamic>>.from(analysisData['detections'] ?? []);
 
       setState(() {
         _detections = newDetections;
@@ -94,11 +117,18 @@ class _HomeScreenState extends State<HomeScreen> {
         _mapController.move(item.coordinates, 8.0);
       }
 
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Analysis complete: ${newDetections.length} detections found for ${item.name}."),
-        backgroundColor: Colors.green.shade700,
-      ));
+      // **IMPROVEMENT: Show a specific message when no deforestation is found**
+      if (newDetections.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("No deforestation area found for ${item.name}."),
+          backgroundColor: Colors.blue.shade700, // Use a neutral, informational color
+        ));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Analysis complete: ${newDetections.length} detections found for ${item.name}."),
+          backgroundColor: Colors.green.shade700,
+        ));
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -122,7 +152,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final severity = detection['severity']?.toString().toLowerCase() ?? 'medium';
       final Color markerColor = _getSeverityColor(severity);
-
       final areaHa = (detection['area_ha'] as num? ?? 0);
 
       return Marker(
@@ -177,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         mapController: _mapController,
                         watchlistMarkers: _buildWatchlistMarkers(),
                         detectionMarkers: _buildDetectionMarkers(),
-                        detectionPolygons: const [], 
+                        detectionPolygons: const [],
                         isSelectionMode: _isSelectionMode,
                         selectionPoints: _selectionPoints,
                         onMapTap: _onMapTapped,
@@ -254,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Image.memory(
               base64Decode(base64String.split(',').last),
               fit: BoxFit.cover,
-              gaplessPlayback: true, 
+              gaplessPlayback: true,
               errorBuilder: (context, error, stackTrace) {
                 return const AspectRatio(
                   aspectRatio: 1,
