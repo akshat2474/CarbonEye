@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:carboneye/models/annotation.dart';
-import 'package:carboneye/models/report_data.dart';
 import 'package:carboneye/models/watchlist_item.dart';
 import 'package:carboneye/screens/all_alerts_screen.dart';
 import 'package:carboneye/screens/annotation_screen.dart';
@@ -12,7 +11,9 @@ import 'package:carboneye/services/report_generator.dart';
 import 'package:carboneye/utils/constants.dart';
 import 'package:carboneye/widgets/dashboard_item.dart';
 import 'package:carboneye/widgets/map_preview.dart';
+import 'package:carboneye/widgets/neu_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -24,7 +25,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Controllers and Services
+  // ... (keep all your existing state variables and methods)
   final MapController _mapController = MapController();
   final ApiService _apiService = ApiService();
 
@@ -64,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
 
       final newDetections = List<Map<String, dynamic>>.from(result['detections']);
-      
+
       setState(() {
         _detections = newDetections;
         _lastSynced = DateTime.now();
@@ -94,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // center the map on the region the user tapped on, preventing any crash.
         _mapController.move(item.coordinates, 8.0);
       }
-      
+
       // --- End of the new logic ---
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -111,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-  
+
   /// FIXED: This function now safely filters out invalid data instead of creating empty polygons.
   List<Polygon> _buildDetectionPolygons() {
     return _detections.map((detection) {
@@ -137,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
         LatLng(maxLat, maxLon),
         LatLng(maxLat, minLon),
       ];
-      
+
       final severity = detection['severity']?.toString().toLowerCase() ?? 'medium';
       final Color regionColor = _getSeverityColor(severity);
 
@@ -158,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (center is! Map || center['latitude'] is! num || center['longitude'] is! num) {
         return null;
       }
-      
+
       final lat = (center['latitude'] as num).toDouble();
       final lon = (center['longitude'] as num).toDouble();
 
@@ -179,51 +180,55 @@ class _HomeScreenState extends State<HomeScreen> {
     }).whereType<Marker>().toList(); // This filters out all nulls.
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackgroundColor,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeroSection(),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildStatsSummary(),
-                  const SizedBox(height: 30),
-                  Text("Global Deforestation Hotspots", style: kSectionTitleStyle.copyWith(fontSize: 24)),
-                  const SizedBox(height: 16),
-                  _buildMapFilters(),
-                  const SizedBox(height: 12),
-                  MapPreview(
-                    selectedLayer: _selectedMapFilter,
-                    mapController: _mapController,
-                    watchlistMarkers: _buildWatchlistMarkers(),
-                    detectionMarkers: _buildDetectionMarkers(),
-                    detectionPolygons: _buildDetectionPolygons(),
-                    isSelectionMode: _isSelectionMode,
-                    selectionPoints: _selectionPoints,
-                    onMapTap: _onMapTapped,
+      body: CustomScrollView(
+        slivers: [
+          _buildSliverAppBar(),
+          SliverList(
+            delegate: SliverChildListDelegate(
+              [
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildStatsSummary(),
+                      const SizedBox(height: 30),
+                      Text("Global Deforestation Hotspots", style: kSectionTitleStyle),
+                      const SizedBox(height: 16),
+                      _buildMapFilters(),
+                      const SizedBox(height: 12),
+                      MapPreview(
+                        selectedLayer: _selectedMapFilter,
+                        mapController: _mapController,
+                        watchlistMarkers: _buildWatchlistMarkers(),
+                        detectionMarkers: _buildDetectionMarkers(),
+                        detectionPolygons: _buildDetectionPolygons(),
+                        isSelectionMode: _isSelectionMode,
+                        selectionPoints: _selectionPoints,
+                        onMapTap: _onMapTapped,
+                      ),
+                      const SizedBox(height: 8),
+                      if (_isSelectionMode) _buildSelectionControls(),
+                      _buildLastSynced(),
+                      const SizedBox(height: 30),
+                      _buildWatchlist(),
+                      const SizedBox(height: 30),
+                      Text("Dashboard", style: kSectionTitleStyle),
+                      const SizedBox(height: 16),
+                      _buildDashboardList(),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  if (_isSelectionMode) _buildSelectionControls(),
-                  _buildLastSynced(),
-                  const SizedBox(height: 30),
-                  _buildWatchlist(),
-                  const SizedBox(height: 30),
-                  Text("Dashboard", style: kSectionTitleStyle.copyWith(fontSize: 24)),
-                  const SizedBox(height: 16),
-                  _buildDashboardList(),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        ],
+      ).animate().fadeIn(duration: 500.ms),
       floatingActionButton: _isSelectionMode ? null : FloatingActionButton(
         onPressed: () {
           final WatchlistItem? itemToRefresh = _activeWatchlistItem ?? (_watchlistRegions.isNotEmpty ? _watchlistRegions.first : null);
@@ -242,8 +247,61 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- All other helper methods and build widgets remain unchanged. ---
+  SliverAppBar _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 250.0,
+      backgroundColor: kBackgroundColor,
+      pinned: true,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              'assets/images/satellite_forest.png',
+              fit: BoxFit.cover,
+            ).animate().fadeIn(duration: 500.ms),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, kBackgroundColor],
+                  stops: [0.4, 1.0],
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 60,
+              left: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Real-time intelligence.", style: kSectionTitleStyle.copyWith(fontSize: 30)),
+                  Text("Zero trees lost.", style: kSectionTitleStyle.copyWith(color: kAccentColor, fontSize: 30)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
+  Widget _buildStatItem(String title, String value) {
+    return Column(children: [Text(value, style: kStatValueStyle), const SizedBox(height: 4), Text(title, style: kSecondaryBodyTextStyle)]);
+  }
+
+  Widget _buildStatsSummary() {
+    return NeuCard(
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+        _buildStatItem("Active Alerts", _detections.length.toString()),
+        _buildStatItem("Regions", _watchlistRegions.length.toString()),
+        _buildStatItem("Area (ha)", _calculateTotalArea()),
+      ]),
+    ).animate().slideY(delay: 200.ms, duration: 400.ms, curve: Curves.easeOut);
+  }
+
+  // --- (Add back all your other helper methods and build widgets here, unchanged) ---
   void _onMapTapped(LatLng point) {
     setState(() {
       if (_selectionPoints.length >= 2) {
@@ -275,7 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final point1 = _selectionPoints[0];
     final point2 = _selectionPoints[1];
-    
+
     final tempItem = WatchlistItem(
       name: "Custom Selection",
       coordinates: LatLng((point1.latitude + point2.latitude) / 2, (point1.longitude + point2.longitude) / 2),
@@ -293,7 +351,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _selectionPoints = [];
     });
   }
-  
+
   void _addToWatchlist(String regionName) {
     if (_availableForestsData.containsKey(regionName) && !_watchlistRegions.any((item) => item.name == regionName)) {
       final data = _availableForestsData[regionName]!;
@@ -440,12 +498,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildWatchlist() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text("My Watchlist", style: kSectionTitleStyle.copyWith(fontSize: 24)),
+        Text("My Watchlist", style: kSectionTitleStyle),
         TextButton.icon(onPressed: _showAddWatchlistDialog, icon: const Icon(Icons.add, color: kAccentColor, size: 20), label: const Text('Add', style: TextStyle(color: kAccentColor))),
       ]),
       const SizedBox(height: 8),
-      Container(
-        decoration: BoxDecoration(color: kCardColor, borderRadius: BorderRadius.circular(12.0)),
+      NeuCard(
+        padding: EdgeInsets.zero,
         child: ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -492,34 +550,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(mainAxisAlignment: MainAxisAlignment.end, children: [Text('Last updated: $timeAgo', style: kSecondaryBodyTextStyle.copyWith(fontSize: 12))]);
   }
 
-  Widget _buildHeroSection() {
-    return Stack(alignment: Alignment.bottomLeft, children: [
-      Image.asset('assets/images/satellite_forest.png', height: 350, width: double.infinity, fit: BoxFit.cover),
-      Container(height: 350, decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, kBackgroundColor], stops: [0.4, 1.0]))),
-      Padding(padding: const EdgeInsets.all(20.0), child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-        Text("Real-time intelligence.", style: kSectionTitleStyle),
-        Text("Zero trees lost.", style: kSectionTitleStyle.copyWith(color: kAccentColor)),
-        const SizedBox(height: 16),
-        Text("Automated satellite analysis to protect our vital ecosystems.", style: kSecondaryBodyTextStyle),
-      ])),
-    ]);
-  }
-
-  Widget _buildStatsSummary() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-      decoration: BoxDecoration(color: kCardColor, borderRadius: BorderRadius.circular(12.0)),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-        _buildStatItem("Active Alerts", _detections.length.toString()),
-        _buildStatItem("Regions", _watchlistRegions.length.toString()),
-        _buildStatItem("Area (ha)", _calculateTotalArea()),
-      ]),
-    );
-  }
-
-  Widget _buildStatItem(String title, String value) {
-    return Column(children: [Text(value, style: kStatValueStyle), const SizedBox(height: 4), Text(title, style: kSecondaryBodyTextStyle)]);
-  }
 
   Future<void> _showAddWatchlistDialog() async {
     String? selectedForest;

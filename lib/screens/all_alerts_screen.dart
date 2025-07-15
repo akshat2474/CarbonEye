@@ -1,5 +1,7 @@
 import 'package:carboneye/utils/constants.dart';
+import 'package:carboneye/widgets/neu_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 
 class AllAlertsScreen extends StatelessWidget {
@@ -11,7 +13,7 @@ class AllAlertsScreen extends StatelessWidget {
     return detections.map((d) {
       final center = d['center_coordinates'];
       final severityString = d['severity']?.toString().toLowerCase() ?? 'medium';
-      
+
       AlertSeverity severity;
       switch (severityString) {
         case 'critical':
@@ -32,9 +34,9 @@ class AllAlertsScreen extends StatelessWidget {
         id: d['id']?.toString() ?? UniqueKey().toString(),
         title: 'Deforestation Event',
         location: 'Lat: ${center['latitude'].toStringAsFixed(4)}, Lon: ${center['longitude'].toStringAsFixed(4)}',
-        date: DateTime.now(), 
+        date: DateTime.now(),
         severity: severity,
-        area: (d['area_ha'] as num?)?.toDouble() ?? 0.0, 
+        area: (d['area_ha'] as num?)?.toDouble() ?? 0.0,
       );
     }).toList();
   }
@@ -42,7 +44,7 @@ class AllAlertsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<AlertItem> alerts = _transformDetectionsToAlerts();
-    
+
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: AppBar(
@@ -59,7 +61,10 @@ class AllAlertsScreen extends StatelessWidget {
               itemCount: alerts.length,
               itemBuilder: (context, index) {
                 final alert = alerts[index];
-                return _buildAlertCard(alert);
+                return _buildAlertCard(alert)
+                    .animate()
+                    .fadeIn(delay: (100 * index).ms, duration: 400.ms)
+                    .slideX(begin: 0.2, curve: Curves.easeOut);
               },
               separatorBuilder: (context, index) => const SizedBox(height: 12),
             ),
@@ -91,62 +96,64 @@ class AllAlertsScreen extends StatelessWidget {
   Widget _buildAlertCard(AlertItem alert) {
     final Color severityColor = _getSeverityColor(alert.severity);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: kCardColor,
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border(left: BorderSide(color: severityColor, width: 5)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  alert.severity.name.toUpperCase(),
-                  style: kBodyTextStyle.copyWith(
-                    color: severityColor,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                if (alert.area > 0)
+    return NeuCard(
+      padding: EdgeInsets.zero,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15.0),
+          border: Border(left: BorderSide(color: severityColor, width: 6)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
                   Text(
-                    '${alert.area.toStringAsFixed(2)} ha',
+                    alert.severity.name.toUpperCase(),
                     style: kBodyTextStyle.copyWith(
-                      color: kAccentColor,
+                      color: severityColor,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
                     ),
                   ),
-              ],
-            ),
-            const Divider(color: kBackgroundColor, height: 24),
-            Text(
-              alert.title,
-              style: kBodyTextStyle.copyWith(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.location_on_outlined, color: kSecondaryTextColor, size: 16),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(alert.location, style: kSecondaryBodyTextStyle, overflow: TextOverflow.ellipsis),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.calendar_today_outlined, color: kSecondaryTextColor, size: 16),
-                const SizedBox(width: 8),
-                Text(DateFormat.yMMMd().add_jm().format(alert.date), style: kSecondaryBodyTextStyle),
-              ],
-            ),
-          ],
+                  if (alert.area > 0)
+                    Text(
+                      '${alert.area.toStringAsFixed(2)} ha',
+                      style: kBodyTextStyle.copyWith(
+                        color: kAccentColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+              const Divider(color: kBackgroundColor, height: 24),
+              Text(
+                alert.title,
+                style: kBodyTextStyle.copyWith(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.location_on_outlined, color: kSecondaryTextColor, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(alert.location, style: kSecondaryBodyTextStyle, overflow: TextOverflow.ellipsis),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today_outlined, color: kSecondaryTextColor, size: 16),
+                  const SizedBox(width: 8),
+                  Text(DateFormat.yMMMd().add_jm().format(alert.date), style: kSecondaryBodyTextStyle),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -183,6 +190,6 @@ class AlertItem {
     required this.date,
     required this.severity,
     this.isArchived = false,
-    this.area = 0.0, 
+    this.area = 0.0,
   });
 }

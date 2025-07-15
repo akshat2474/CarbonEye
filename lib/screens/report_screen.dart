@@ -1,12 +1,39 @@
 import 'package:carboneye/models/report_data.dart';
+import 'package:carboneye/services/pdf_generator.dart'; // Import the new service
 import 'package:carboneye/utils/constants.dart';
+import 'package:carboneye/widgets/neu_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 
-class ReportScreen extends StatelessWidget {
+class ReportScreen extends StatefulWidget { // Convert to StatefulWidget
   final ReportData reportData;
 
   const ReportScreen({super.key, required this.reportData});
+
+  @override
+  State<ReportScreen> createState() => _ReportScreenState();
+}
+
+class _ReportScreenState extends State<ReportScreen> { // Create State
+  bool _isGeneratingPdf = false;
+
+  Future<void> _handlePdfGeneration() async {
+    setState(() => _isGeneratingPdf = true);
+    try {
+      await PdfGenerator.generateAndShareReport(widget.reportData);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to generate PDF: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingPdf = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +44,28 @@ class ReportScreen extends StatelessWidget {
         backgroundColor: kBackgroundColor,
         elevation: 0,
         actions: [
+          // New Download PDF Button
+          IconButton(
+            icon: _isGeneratingPdf
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: kWhiteColor,
+                      strokeWidth: 2.0,
+                    ),
+                  )
+                : const Icon(Icons.picture_as_pdf_outlined),
+            tooltip: 'Download as PDF',
+            onPressed: _isGeneratingPdf ? null : _handlePdfGeneration,
+          ),
           IconButton(
             icon: const Icon(Icons.share_outlined),
-            tooltip: 'Export Report',
+            tooltip: 'Share Report',
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                    content: Text('Export feature is not yet implemented.')),
+                    content: Text('Share feature is not yet implemented.')),
               );
             },
           ),
@@ -42,22 +84,24 @@ class ReportScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _buildCriticalDetectionsList(),
           ],
-        ),
+        ).animate().fadeIn(duration: 400.ms),
       ),
     );
   }
+
+  // --- All other build methods remain the same ---
 
   Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Deforestation Analysis for ${reportData.region.name}',
+          'Deforestation Analysis for ${widget.reportData.region.name}',
           style: kSectionTitleStyle.copyWith(fontSize: 24),
         ),
         const SizedBox(height: 8),
         Text(
-          'Report Period: ${DateFormat.yMMMd().format(reportData.startDate)} - ${DateFormat.yMMMd().format(reportData.endDate)}',
+          'Report Period: ${DateFormat.yMMMd().format(widget.reportData.startDate)} - ${DateFormat.yMMMd().format(widget.reportData.endDate)}',
           style: kSecondaryBodyTextStyle,
         ),
       ],
@@ -68,25 +112,20 @@ class ReportScreen extends StatelessWidget {
     return Column(
       children: [
         _buildMetricCard(
-            'Total Detections', reportData.totalDetections.toString()),
+            'Total Detections', widget.reportData.totalDetections.toString()),
         const SizedBox(height: 12),
         _buildMetricCard(
-            'Critical Alerts', reportData.criticalAlerts.toString(),
+            'Critical Alerts', widget.reportData.criticalAlerts.toString(),
             color: Colors.red.shade300),
         const SizedBox(height: 12),
-        _buildMetricCard('High Alerts', reportData.highAlerts.toString(),
+        _buildMetricCard('High Alerts', widget.reportData.highAlerts.toString(),
             color: Colors.orange.shade300),
       ],
     );
   }
 
   Widget _buildMetricCard(String label, String value, {Color? color}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      decoration: BoxDecoration(
-        color: kCardColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return NeuCard(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -102,29 +141,26 @@ class ReportScreen extends StatelessWidget {
   }
 
   Widget _buildSeverityChart() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-          color: kCardColor, borderRadius: BorderRadius.circular(12)),
+    return NeuCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Detections by Severity',
               style: kBodyTextStyle.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          _buildBar('Critical', reportData.criticalAlerts, Colors.red.shade400),
+          _buildBar('Critical', widget.reportData.criticalAlerts, Colors.red.shade400),
           const SizedBox(height: 12),
-          _buildBar('High', reportData.highAlerts, Colors.orange.shade400),
+          _buildBar('High', widget.reportData.highAlerts, Colors.orange.shade400),
           const SizedBox(height: 12),
-          _buildBar('Medium', reportData.mediumAlerts, Colors.yellow.shade400),
+          _buildBar('Medium', widget.reportData.mediumAlerts, Colors.yellow.shade400),
         ],
       ),
     );
   }
 
   Widget _buildBar(String label, int value, Color color) {
-    final double total = reportData.totalDetections > 0
-        ? reportData.totalDetections.toDouble()
+    final double total = widget.reportData.totalDetections > 0
+        ? widget.reportData.totalDetections.toDouble()
         : 1;
     final double fraction = value / total;
     return Row(
@@ -135,6 +171,7 @@ class ReportScreen extends StatelessWidget {
             message: '$value detections',
             child: Container(
               height: 20,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                   color: color.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(4)),
@@ -163,12 +200,8 @@ class ReportScreen extends StatelessWidget {
         Text('Most Significant Detections',
             style: kSectionTitleStyle.copyWith(fontSize: 20)),
         const SizedBox(height: 12),
-        if (reportData.mostSevereDetections.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-                color: kCardColor, borderRadius: BorderRadius.circular(12)),
+        if (widget.reportData.mostSevereDetections.isEmpty)
+          NeuCard(
             child: Center(
                 child: Text('No significant detections in this period.',
                     style: kSecondaryBodyTextStyle)),
@@ -177,9 +210,9 @@ class ReportScreen extends StatelessWidget {
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: reportData.mostSevereDetections.length,
+            itemCount: widget.reportData.mostSevereDetections.length,
             itemBuilder: (context, index) {
-              final detection = reportData.mostSevereDetections[index];
+              final detection = widget.reportData.mostSevereDetections[index];
               final center = detection['center_coordinates'];
               final severity = detection['severity']?.toString() ?? 'Medium';
               double areaValue = 0.0;
@@ -187,11 +220,8 @@ class ReportScreen extends StatelessWidget {
                 areaValue = detection['area_ha'];
               }
 
-              return Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                decoration: BoxDecoration(
-                    color: kCardColor, borderRadius: BorderRadius.circular(12)),
+              return NeuCard(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

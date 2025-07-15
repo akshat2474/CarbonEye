@@ -1,0 +1,124 @@
+import 'dart:typed_data';
+import 'package:carboneye/models/report_data.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:intl/intl.dart';
+
+class PdfGenerator {
+  static Future<void> generateAndShareReport(ReportData reportData) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) => [
+          _buildHeader(reportData),
+          pw.SizedBox(height: 20),
+          _buildSummary(reportData),
+          pw.SizedBox(height: 20),
+          _buildDetectionsTable(reportData),
+        ],
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+      name: 'CarbonEye_Report_${reportData.region.name.replaceAll(' ', '_')}.pdf',
+    );
+  }
+
+  static pw.Widget _buildHeader(ReportData reportData) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          'CarbonEye Impact Report',
+          style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+        ),
+        pw.SizedBox(height: 10),
+        pw.Text(
+          'Region: ${reportData.region.name}',
+          style: const pw.TextStyle(fontSize: 18),
+        ),
+        pw.SizedBox(height: 5),
+        pw.Text(
+          'Period: ${DateFormat.yMMMd().format(reportData.startDate)} - ${DateFormat.yMMMd().format(reportData.endDate)}',
+          style: const pw.TextStyle(fontSize: 14, color: PdfColors.grey600),
+        ),
+        pw.Divider(height: 20),
+      ],
+    );
+  }
+
+  static pw.Widget _buildSummary(ReportData reportData) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text('Summary', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 10),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            _summaryItem('Total Detections:', reportData.totalDetections.toString()),
+            _summaryItem('Total Area:', '${reportData.totalAreaHa.toStringAsFixed(2)} ha'),
+          ],
+        ),
+        pw.SizedBox(height: 10),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            _summaryItem('Critical Alerts:', reportData.criticalAlerts.toString(), color: PdfColors.red),
+            _summaryItem('High Alerts:', reportData.highAlerts.toString(), color: PdfColors.orange),
+            _summaryItem('Medium Alerts:', reportData.mediumAlerts.toString(), color: PdfColors.amber),
+          ],
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _summaryItem(String title, String value, {PdfColor color = PdfColors.black}) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(title, style: const pw.TextStyle(color: PdfColors.grey700)),
+        pw.Text(value, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16, color: color)),
+      ],
+    );
+  }
+
+  static pw.Widget _buildDetectionsTable(ReportData reportData) {
+    final headers = ['Severity', 'Location (Lat, Lon)', 'Area (ha)'];
+
+    final data = reportData.mostSevereDetections.map((item) {
+      final center = item['center_coordinates'];
+      return [
+        item['severity']?.toString() ?? 'N/A',
+        '${center['latitude'].toStringAsFixed(4)}, ${center['longitude'].toStringAsFixed(4)}',
+        (item['area_ha'] as num?)?.toStringAsFixed(2) ?? 'N/A',
+      ];
+    }).toList();
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.SizedBox(height: 20),
+        pw.Text('Most Significant Detections', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 10),
+        pw.Table.fromTextArray(
+          headers: headers,
+          data: data,
+          border: pw.TableBorder.all(color: PdfColors.grey300),
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          cellStyle: const pw.TextStyle(),
+          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
+          cellAlignments: {
+            0: pw.Alignment.centerLeft,
+            1: pw.Alignment.center,
+            2: pw.Alignment.centerRight,
+          },
+        ),
+      ],
+    );
+  }
+}

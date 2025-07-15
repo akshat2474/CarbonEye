@@ -1,4 +1,5 @@
 import 'package:carboneye/utils/constants.dart';
+import 'package:carboneye/widgets/neu_card.dart';
 import 'package:flutter/material.dart';
 
 class DashboardItem extends StatelessWidget {
@@ -17,15 +18,9 @@ class DashboardItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12.0),
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: kCardColor,
-          borderRadius: BorderRadius.circular(12.0),
-        ),
+      child: NeuCard(
         child: Row(
           children: [
             Icon(icon, color: kAccentColor, size: 28),

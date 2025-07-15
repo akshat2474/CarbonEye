@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:carboneye/utils/constants.dart';
 import 'package:carboneye/services/notification_service.dart';
 import 'package:carboneye/screens/privacy_policy_screen.dart';
 import 'package:carboneye/screens/edit_account_screen.dart';
 import 'package:carboneye/utils/file_helper.dart';
 import 'package:carboneye/screens/log_viewer_screen.dart';
+import 'package:carboneye/widgets/neu_card.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -25,6 +27,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _notificationService.init();
     _loadPreferences();
   }
+
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -121,7 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Notifications", style: kSectionTitleStyle.copyWith(fontSize: 22)),
+            _buildSectionTitle("Notifications"),
             const SizedBox(height: 16),
             _buildSettingsCard(
               children: [
@@ -141,7 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 30),
-            Text("Account", style: kSectionTitleStyle.copyWith(fontSize: 22)),
+            _buildSectionTitle("Account"),
             const SizedBox(height: 16),
             _buildSettingsCard(
               children: [
@@ -153,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 30),
-            Text("About", style: kSectionTitleStyle.copyWith(fontSize: 22)),
+            _buildSectionTitle("About"),
             const SizedBox(height: 16),
             _buildSettingsCard(
               children: [
@@ -165,7 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 30),
-            Text("Developer", style: kSectionTitleStyle.copyWith(fontSize: 22)),
+            _buildSectionTitle("Developer"),
             const SizedBox(height: 16),
             _buildSettingsCard(
               children: [
@@ -177,14 +180,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ],
-        ),
+        ).animate().fadeIn(duration: 400.ms),
       ),
     );
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Text(title, style: kSectionTitleStyle.copyWith(fontSize: 22));
+  }
+
   Widget _buildSettingsCard({required List<Widget> children}) {
-    return Container(
-      decoration: BoxDecoration(color: kCardColor, borderRadius: BorderRadius.circular(12.0)),
+    return NeuCard(
+      padding: EdgeInsets.zero,
       child: Column(children: children),
     );
   }
