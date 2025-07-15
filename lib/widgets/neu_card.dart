@@ -6,7 +6,7 @@ class NeuCard extends StatelessWidget {
   final double borderRadius;
   final EdgeInsetsGeometry padding;
   final Color? color;
-  final bool enableShadow; // Add this parameter
+  final bool enableShadow; 
 
   const NeuCard({
     super.key,
@@ -14,7 +14,7 @@ class NeuCard extends StatelessWidget {
     this.borderRadius = 15.0,
     this.padding = const EdgeInsets.all(12.0),
     this.color,
-    this.enableShadow = false, // Default to no shadow
+    this.enableShadow = false,
   });
 
   @override

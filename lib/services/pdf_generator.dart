@@ -1,12 +1,13 @@
-import 'dart:typed_data';
+import 'dart:io';
 import 'package:carboneye/models/report_data.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 
 class PdfGenerator {
-  static Future<void> generateAndShareReport(ReportData reportData) async {
+  static Future<File> generateReportFile(ReportData reportData) async {
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -22,12 +23,21 @@ class PdfGenerator {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-      name: 'CarbonEye_Report_${reportData.region.name.replaceAll(' ', '_')}.pdf',
-    );
+    final output = await getTemporaryDirectory();
+    final file = File("${output.path}/CarbonEye_Report_${reportData.region.name.replaceAll(' ', '_')}.pdf");
+    await file.writeAsBytes(await pdf.save());
+
+    return file;
   }
 
+  static Future<void> generateAndPrintReport(ReportData reportData) async {
+    final file = await generateReportFile(reportData);
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => file.readAsBytes(),
+    );
+  }
+  
   static pw.Widget _buildHeader(ReportData reportData) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,

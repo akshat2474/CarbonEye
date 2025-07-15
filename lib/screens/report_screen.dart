@@ -1,12 +1,13 @@
 import 'package:carboneye/models/report_data.dart';
-import 'package:carboneye/services/pdf_generator.dart'; // Import the new service
+import 'package:carboneye/services/pdf_generator.dart';
 import 'package:carboneye/utils/constants.dart';
 import 'package:carboneye/widgets/neu_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart'; 
 
-class ReportScreen extends StatefulWidget { // Convert to StatefulWidget
+class ReportScreen extends StatefulWidget {
   final ReportData reportData;
 
   const ReportScreen({super.key, required this.reportData});
@@ -15,13 +16,13 @@ class ReportScreen extends StatefulWidget { // Convert to StatefulWidget
   State<ReportScreen> createState() => _ReportScreenState();
 }
 
-class _ReportScreenState extends State<ReportScreen> { // Create State
-  bool _isGeneratingPdf = false;
+class _ReportScreenState extends State<ReportScreen> {
+  bool _isProcessing = false;
 
   Future<void> _handlePdfGeneration() async {
-    setState(() => _isGeneratingPdf = true);
+    setState(() => _isProcessing = true);
     try {
-      await PdfGenerator.generateAndShareReport(widget.reportData);
+      await PdfGenerator.generateAndPrintReport(widget.reportData);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -30,7 +31,28 @@ class _ReportScreenState extends State<ReportScreen> { // Create State
       }
     } finally {
       if (mounted) {
-        setState(() => _isGeneratingPdf = false);
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  Future<void> _handleShare() async {
+    setState(() => _isProcessing = true);
+    try {
+      final file = await PdfGenerator.generateReportFile(widget.reportData);
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'CarbonEye Deforestation Report for ${widget.reportData.region.name}',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to share report: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
       }
     }
   }
@@ -44,9 +66,15 @@ class _ReportScreenState extends State<ReportScreen> { // Create State
         backgroundColor: kBackgroundColor,
         elevation: 0,
         actions: [
-          // New Download PDF Button
           IconButton(
-            icon: _isGeneratingPdf
+            icon: _isProcessing
+                ? const SizedBox.shrink() 
+                : const Icon(Icons.picture_as_pdf_outlined),
+            tooltip: 'Download as PDF',
+            onPressed: _isProcessing ? null : _handlePdfGeneration,
+          ),
+          IconButton(
+            icon: _isProcessing
                 ? const SizedBox(
                     width: 20,
                     height: 20,
@@ -55,19 +83,9 @@ class _ReportScreenState extends State<ReportScreen> { // Create State
                       strokeWidth: 2.0,
                     ),
                   )
-                : const Icon(Icons.picture_as_pdf_outlined),
-            tooltip: 'Download as PDF',
-            onPressed: _isGeneratingPdf ? null : _handlePdfGeneration,
-          ),
-          IconButton(
-            icon: const Icon(Icons.share_outlined),
+                : const Icon(Icons.share_outlined),
             tooltip: 'Share Report',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Share feature is not yet implemented.')),
-              );
-            },
+            onPressed: _isProcessing ? null : _handleShare,
           ),
         ],
       ),
@@ -88,8 +106,6 @@ class _ReportScreenState extends State<ReportScreen> { // Create State
       ),
     );
   }
-
-  // --- All other build methods remain the same ---
 
   Widget _buildHeader() {
     return Column(
