@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'package:carboneye/models/annotation.dart';
 import 'package:carboneye/models/watchlist_item.dart';
@@ -28,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final MapController _mapController = MapController();
   final ApiService _apiService = ApiService();
 
-  String _selectedMapFilter = 'Heatmap';
+  String _selectedMapFilter = 'Satellite';
   List<Map<String, dynamic>> _detections = [];
   bool _isLoading = false;
   DateTime _lastSynced = DateTime.now();
@@ -36,6 +37,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isSelectionMode = false;
   List<LatLng> _selectionPoints = [];
+
+  String? _t0ImageBase64;
+  String? _t1ImageBase64;
 
   final List<WatchlistItem> _watchlistRegions = [
     WatchlistItem(name: 'Amazonas, Brazil', coordinates: const LatLng(-3.46, -62.21), bbox: [-62.2159, -3.4653, -62.1159, -3.3653], annotations: [Annotation(id: '1', text: "Initial area of concern noted.", timestamp: DateTime.now())]),
@@ -52,17 +56,24 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isLoading = true;
       _detections = [];
+      _t0ImageBase64 = null;
+      _t1ImageBase64 = null;
       _activeWatchlistItem = item;
     });
 
     try {
-      final result = await _apiService.analyzeRegion(item.bbox);
+      final result = await _apiService.analyzeRegionWithImages(item.bbox);
       if (!mounted) return;
 
-      final newDetections = List<Map<String, dynamic>>.from(result['detections']);
+      final analysisData = result['analysis'];
+      final imageData = result['images'];
+
+      final newDetections = List<Map<String, dynamic>>.from(analysisData['detections']);
 
       setState(() {
         _detections = newDetections;
+        _t0ImageBase64 = imageData['t0_image'];
+        _t1ImageBase64 = imageData['t1_image'];
         _lastSynced = DateTime.now();
       });
 
@@ -72,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return LatLng((coords['latitude'] as num).toDouble(), (coords['longitude'] as num).toDouble());
         }
         return null;
-      }).whereType<LatLng>().toList(); 
+      }).whereType<LatLng>().toList();
 
       if (validPoints.isNotEmpty) {
         final bounds = LatLngBounds.fromPoints(validPoints);
@@ -99,42 +110,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  List<Polygon> _buildDetectionPolygons() {
-    return _detections.map((detection) {
-      final bbox = detection['geographic_bbox'];
-      if (bbox == null || bbox is! List || bbox.length < 4) {
-        return null;
-      }
-
-      final minLon = (bbox[0] as num?)?.toDouble();
-      final minLat = (bbox[1] as num?)?.toDouble();
-      final maxLon = (bbox[2] as num?)?.toDouble();
-      final maxLat = (bbox[3] as num?)?.toDouble();
-
-      if (minLon == null || minLat == null || maxLon == null || maxLat == null) {
-        return null;
-      }
-
-      final List<LatLng> polygonPoints = [
-        LatLng(minLat, minLon),
-        LatLng(minLat, maxLon),
-        LatLng(maxLat, maxLon),
-        LatLng(maxLat, minLon),
-      ];
-
-      final severity = detection['severity']?.toString().toLowerCase() ?? 'medium';
-      final Color regionColor = _getSeverityColor(severity);
-
-      return Polygon(
-        points: polygonPoints,
-        color: regionColor.withOpacity(0.25),
-        borderColor: regionColor.withOpacity(0.7),
-        borderStrokeWidth: 1.5,
-        isFilled: true,
-      );
-    }).whereType<Polygon>().toList(); 
-  }
-
   List<Marker> _buildDetectionMarkers() {
     return _detections.map((detection) {
       final center = detection['center_coordinates'];
@@ -148,14 +123,27 @@ class _HomeScreenState extends State<HomeScreen> {
       final severity = detection['severity']?.toString().toLowerCase() ?? 'medium';
       final Color markerColor = _getSeverityColor(severity);
 
+      final areaHa = (detection['area_ha'] as num? ?? 0);
+
       return Marker(
-        width: 18.0, height: 18.0,
+        width: 24.0, height: 24.0,
         point: LatLng(lat, lon),
         child: GestureDetector(
           onTap: () => _showDetectionDetailsDialog(detection),
           child: Tooltip(
-            message: 'Severity: $severity\nArea: ${detection['area_ha']} ha\n(Tap for details)',
-            child: Container(decoration: BoxDecoration(color: markerColor.withAlpha(200), shape: BoxShape.circle, border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.5))),
+            message: 'Severity: $severity\nArea: ${areaHa.toStringAsFixed(2)} ha\n(Tap for details)',
+            child: Container(
+              decoration: BoxDecoration(
+                color: markerColor.withAlpha(220),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.9), width: 2.0)
+              ),
+               child: Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.white.withOpacity(0.9),
+                size: 14,
+              ),
+            ),
           ),
         ),
       );
@@ -189,13 +177,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         mapController: _mapController,
                         watchlistMarkers: _buildWatchlistMarkers(),
                         detectionMarkers: _buildDetectionMarkers(),
-                        detectionPolygons: _buildDetectionPolygons(),
+                        detectionPolygons: const [], 
                         isSelectionMode: _isSelectionMode,
                         selectionPoints: _selectionPoints,
                         onMapTap: _onMapTapped,
                       ),
                       const SizedBox(height: 8),
                       if (_isSelectionMode) _buildSelectionControls(),
+                      if (_t0ImageBase64 != null && _t1ImageBase64 != null)
+                        _buildImageComparison(),
                       _buildLastSynced(),
                       const SizedBox(height: 30),
                       _buildWatchlist(),
@@ -225,6 +215,57 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: kAccentColor,
         tooltip: 'Refresh Analysis',
         child: _isLoading ? const CircularProgressIndicator(color: kBackgroundColor, strokeWidth: 2.0) : const Icon(Icons.refresh, color: kBackgroundColor),
+      ),
+    );
+  }
+
+  Widget _buildImageComparison() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 24.0),
+      child: NeuCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Satellite Image Comparison", style: kSectionTitleStyle.copyWith(fontSize: 22)),
+            const SizedBox(height: 4),
+            Text("Comparing imagery from before and after the analysis period.", style: kSecondaryBodyTextStyle),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                _buildImageColumn("Before", _t0ImageBase64!),
+                const SizedBox(width: 16),
+                _buildImageColumn("After", _t1ImageBase64!),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1);
+  }
+
+  Widget _buildImageColumn(String title, String base64String) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(title, style: kBodyTextStyle.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12.0),
+            child: Image.memory(
+              base64Decode(base64String.split(',').last),
+              fit: BoxFit.cover,
+              gaplessPlayback: true, 
+              errorBuilder: (context, error, stackTrace) {
+                return const AspectRatio(
+                  aspectRatio: 1,
+                  child: Center(
+                    child: Icon(Icons.error_outline, color: Colors.red, size: 40),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -528,7 +569,10 @@ class _HomeScreenState extends State<HomeScreen> {
     String timeAgo = (difference.inSeconds < 5) ? 'just now' : '${difference.inSeconds}s ago';
     if (difference.inMinutes >= 1) timeAgo = '${difference.inMinutes}m ago';
     if (difference.inHours >= 1) timeAgo = '${difference.inHours}h ago';
-    return Row(mainAxisAlignment: MainAxisAlignment.end, children: [Text('Last updated: $timeAgo', style: kSecondaryBodyTextStyle.copyWith(fontSize: 12))]);
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [Text('Last updated: $timeAgo', style: kSecondaryBodyTextStyle.copyWith(fontSize: 12))]),
+    );
   }
 
 
