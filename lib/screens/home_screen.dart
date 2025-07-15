@@ -1,9 +1,6 @@
-// lib/screens/home_screen.dart
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:carboneye/models/annotation.dart';
 import 'package:carboneye/models/watchlist_item.dart';
 import 'package:carboneye/screens/all_alerts_screen.dart';
 import 'package:carboneye/screens/annotation_screen.dart';
