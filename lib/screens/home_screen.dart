@@ -25,22 +25,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // ... (keep all your existing state variables and methods)
   final MapController _mapController = MapController();
   final ApiService _apiService = ApiService();
 
-  // State Variables
   String _selectedMapFilter = 'Heatmap';
   List<Map<String, dynamic>> _detections = [];
   bool _isLoading = false;
   DateTime _lastSynced = DateTime.now();
   WatchlistItem? _activeWatchlistItem;
 
-  // State for map selection mode
   bool _isSelectionMode = false;
   List<LatLng> _selectionPoints = [];
 
-  // Data
   final List<WatchlistItem> _watchlistRegions = [
     WatchlistItem(name: 'Amazonas, Brazil', coordinates: const LatLng(-3.46, -62.21), bbox: [-62.2159, -3.4653, -62.1159, -3.3653], annotations: [Annotation(id: '1', text: "Initial area of concern noted.", timestamp: DateTime.now())]),
     WatchlistItem(name: 'Congo Basin, DRC', coordinates: const LatLng(0.5, 23.5), bbox: [17.9416, 0.4598, 18.1416, 0.6598]),
@@ -52,7 +48,6 @@ class _HomeScreenState extends State<HomeScreen> {
     'Madagascar': {'coordinates': const LatLng(-18.9, 47.5), 'bbox': [47.0, -19.4, 48.0, -18.4]},
   };
 
-  /// FINAL FIX: This function uses a new, robust implementation to prevent crashes.
   Future<void> _runAnalysis(WatchlistItem item) async {
     setState(() {
       _isLoading = true;
@@ -71,32 +66,23 @@ class _HomeScreenState extends State<HomeScreen> {
         _lastSynced = DateTime.now();
       });
 
-      // --- Start of the new, robust map fitting logic ---
-
-      // 1. Carefully create a list of valid geographic points.
-      // This filters out any detections that might have missing or malformed coordinate data.
       final List<LatLng> validPoints = newDetections.map((d) {
         final coords = d['center_coordinates'];
         if (coords is Map && coords['latitude'] is num && coords['longitude'] is num) {
           return LatLng((coords['latitude'] as num).toDouble(), (coords['longitude'] as num).toDouble());
         }
-        return null; // This detection is invalid, so we return null for it.
-      }).whereType<LatLng>().toList(); // This efficiently removes all the nulls from the list.
+        return null;
+      }).whereType<LatLng>().toList(); 
 
-      // 2. This is the crucial safety check. We ONLY proceed if the list of valid points is not empty.
       if (validPoints.isNotEmpty) {
-        // Because we've confirmed the list is not empty, this call is now 100% safe.
         final bounds = LatLngBounds.fromPoints(validPoints);
         _mapController.fitCamera(
           CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(50.0)),
         );
       } else {
-        // 3. If there are no valid points to show, we fall back to a safe default:
-        // center the map on the region the user tapped on, preventing any crash.
         _mapController.move(item.coordinates, 8.0);
       }
 
-      // --- End of the new logic ---
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Analysis complete: ${newDetections.length} detections found for ${item.name}."),
@@ -113,16 +99,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// FIXED: This function now safely filters out invalid data instead of creating empty polygons.
   List<Polygon> _buildDetectionPolygons() {
     return _detections.map((detection) {
       final bbox = detection['geographic_bbox'];
-      // Check for invalid or incomplete data.
       if (bbox == null || bbox is! List || bbox.length < 4) {
         return null;
       }
 
-      // Safely cast each value, returning null if any are not valid numbers.
       final minLon = (bbox[0] as num?)?.toDouble();
       final minLat = (bbox[1] as num?)?.toDouble();
       final maxLon = (bbox[2] as num?)?.toDouble();
@@ -149,10 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
         borderStrokeWidth: 1.5,
         isFilled: true,
       );
-    }).whereType<Polygon>().toList(); // This filters out all nulls, creating a clean list.
+    }).whereType<Polygon>().toList(); 
   }
 
-  /// FIXED: Applying the same robust filtering logic for markers.
   List<Marker> _buildDetectionMarkers() {
     return _detections.map((detection) {
       final center = detection['center_coordinates'];
@@ -177,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       );
-    }).whereType<Marker>().toList(); // This filters out all nulls.
+    }).whereType<Marker>().toList();
   }
 
 
@@ -301,7 +283,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ).animate().slideY(delay: 200.ms, duration: 400.ms, curve: Curves.easeOut);
   }
 
-  // --- (Add back all your other helper methods and build widgets here, unchanged) ---
   void _onMapTapped(LatLng point) {
     setState(() {
       if (_selectionPoints.length >= 2) {
@@ -318,10 +299,10 @@ class _HomeScreenState extends State<HomeScreen> {
       _selectionPoints = [];
       if (_isSelectionMode) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Selection Mode Enabled: Tap two corners on the map to define a region.'),
+          const SnackBar(
+            content: Text('Selection Mode Enabled: Tap two corners on the map to define a region.'),
             backgroundColor: kAccentColor,
-            duration: const Duration(seconds: 3),
+            duration: Duration(seconds: 3),
           ),
         );
       }

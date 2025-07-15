@@ -6,15 +6,13 @@ class NeuCard extends StatelessWidget {
   final double borderRadius;
   final EdgeInsetsGeometry padding;
   final Color? color;
-  final bool enableShadow; 
 
   const NeuCard({
     super.key,
     required this.child,
-    this.borderRadius = 15.0,
-    this.padding = const EdgeInsets.all(12.0),
+    this.borderRadius = 12.0,
+    this.padding = const EdgeInsets.all(16.0),
     this.color,
-    this.enableShadow = false,
   });
 
   @override
@@ -24,20 +22,17 @@ class NeuCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? kCardColor,
         borderRadius: BorderRadius.circular(borderRadius),
-        boxShadow: enableShadow ? [
+        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            offset: const Offset(4, 4),
-            blurRadius: 8,
-            spreadRadius: 1,
+            color: Colors.black.withOpacity(0.2),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
           ),
-          BoxShadow(
-            color: kCardColor.withOpacity(0.7),
-            offset: const Offset(-4, -4),
-            blurRadius: 8,
-            spreadRadius: 1,
-          ),
-        ] : null,
+        ],
+        border: Border.all(
+          color: kSecondaryTextColor.withOpacity(0.1),
+          width: 1.0,
+        ),
       ),
       child: child,
     );

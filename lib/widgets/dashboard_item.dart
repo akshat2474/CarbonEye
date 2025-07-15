@@ -23,7 +23,14 @@ class DashboardItem extends StatelessWidget {
       child: NeuCard(
         child: Row(
           children: [
-            Icon(icon, color: kAccentColor, size: 28),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: kAccentColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: kAccentColor, size: 28),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
