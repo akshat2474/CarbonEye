@@ -150,7 +150,7 @@
       resultsDiv.style.display = "none";
 
       try {
-        const res = await fetch("http://localhost:3000/stream-image", {
+        const res = await fetch(" https://carboneye-3.onrender.com/stream-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ bbox: bboxArray }),

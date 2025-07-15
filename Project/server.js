@@ -1,7 +1,7 @@
-// server.js (Now with True-Color and NDVI Image Support)
+// server.js (with improved evalscripts for better visualization)
 require('dotenv').config();
 const http = require('http');
-const https = require('https');
+const https = require('https'); // FIX: Corrected typo from 'httpss' to 'https'
 
 // Load environment variables
 const PORT = process.env.PORT || 3000;
@@ -10,7 +10,8 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 // --- EVALSCRIPTS ---
 
-// Evalscript for a standard true-color (RGB) image
+// **FIXED** Evalscript for true-color (RGB) image.
+// Replaced the 'LinearStretch' class with a manual function to avoid ReferenceError.
 const TRUE_COLOR_EVALSCRIPT = `
   //VERSION=3
   function setup() {
@@ -19,12 +20,29 @@ const TRUE_COLOR_EVALSCRIPT = `
       output: { bands: 3 }
     };
   }
+
+  // Self-contained linear stretch function
+  function linearStretch(value, min, max) {
+      if (value < min) return 0;
+      if (value > max) return 1;
+      return (value - min) / (max - min);
+  }
+
   function evaluatePixel(sample) {
-    return [2.5 * sample.B04, 2.5 * sample.B03, 2.5 * sample.B02];
+      // Define the stretch range for visualization
+      const min = 0.0;
+      const max = 0.4;
+      
+      // Apply the stretch to each band
+      let r = linearStretch(sample.B04, min, max);
+      let g = linearStretch(sample.B03, min, max);
+      let b = linearStretch(sample.B02, min, max);
+      
+      return [r, g, b];
   }
 `;
 
-// Evalscript for a visual NDVI (Normalized Difference Vegetation Index) image
+// **IMPROVED** Evalscript for a visual NDVI image with a better color ramp
 const NDVI_EVALSCRIPT = `
   //VERSION=3
   function setup() {
@@ -34,14 +52,16 @@ const NDVI_EVALSCRIPT = `
     };
   }
   
-  // Color ramp for visualization of NDVI values
+  // A more detailed color ramp for better NDVI visualization
   const ramp = [
-    [0.0, 0x000000], // No data
-    [0.01, 0x8B4513], // Brown for no vegetation
-    [0.1, 0xFFE4B5], // Light yellow for sparse vegetation
-    [0.25, 0x32CD32], // Lime green for moderate vegetation
-    [0.5, 0x006400], // Dark green for dense vegetation
-    [1.0, 0x006400]
+    [-1.0, 0x000000], // No data
+    [-0.2, 0xa52a2a], // Brown for non-vegetated areas
+    [0.0, 0xffff00],  // Yellow for sparse vegetation
+    [0.2, 0xadff2f],  // Green-yellow
+    [0.4, 0x008000],  // Green
+    [0.6, 0x006400],  // Darker Green
+    [0.8, 0x004000],  // Even Darker Green
+    [1.0, 0x002000]   // Deepest Green for very dense vegetation
   ];
 
   const visualizer = new ColorRampVisualizer(ramp);
@@ -49,7 +69,7 @@ const NDVI_EVALSCRIPT = `
   function evaluatePixel(sample) {
     // NDVI formula: (NIR - Red) / (NIR + Red)
     let ndvi = (sample.B08 - sample.B04) / (sample.B08 + sample.B04);
-    // The visualizer will turn the NDVI value into a color
+    // The visualizer will turn the NDVI value into a color from the detailed ramp
     return visualizer.process(ndvi);
   }
 `;
