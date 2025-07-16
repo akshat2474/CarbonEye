@@ -1,10 +1,11 @@
 import 'dart:io';
+
 import 'package:carboneye/models/report_data.dart';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 
 class PdfGenerator {
   static Future<File> generateReportFile(ReportData reportData) async {
@@ -24,7 +25,8 @@ class PdfGenerator {
     );
 
     final output = await getTemporaryDirectory();
-    final file = File("${output.path}/CarbonEye_Report_${reportData.region.name.replaceAll(' ', '_')}.pdf");
+    final file = File(
+        "${output.path}/CarbonEye_Report_${reportData.region.name.replaceAll(' ', '_')}.pdf");
     await file.writeAsBytes(await pdf.save());
 
     return file;
@@ -37,7 +39,7 @@ class PdfGenerator {
       onLayout: (PdfPageFormat format) async => file.readAsBytes(),
     );
   }
-  
+
   static pw.Widget _buildHeader(ReportData reportData) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -65,34 +67,43 @@ class PdfGenerator {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text('Summary', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+        pw.Text('Summary',
+            style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 10),
         pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
-            _summaryItem('Total Detections:', reportData.totalDetections.toString()),
-            _summaryItem('Total Area:', '${reportData.totalAreaHa.toStringAsFixed(2)} ha'),
+            _summaryItem(
+                'Total Detections:', reportData.totalDetections.toString()),
+            _summaryItem(
+                'Total Area:', '${reportData.totalAreaHa.toStringAsFixed(2)} ha'),
           ],
         ),
         pw.SizedBox(height: 10),
         pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
-            _summaryItem('Critical Alerts:', reportData.criticalAlerts.toString(), color: PdfColors.red),
-            _summaryItem('High Alerts:', reportData.highAlerts.toString(), color: PdfColors.orange),
-            _summaryItem('Medium Alerts:', reportData.mediumAlerts.toString(), color: PdfColors.amber),
+            _summaryItem('Critical Alerts:', reportData.criticalAlerts.toString(),
+                color: PdfColors.red),
+            _summaryItem('High Alerts:', reportData.highAlerts.toString(),
+                color: PdfColors.orange),
+            _summaryItem('Medium Alerts:', reportData.mediumAlerts.toString(),
+                color: PdfColors.amber),
           ],
         ),
       ],
     );
   }
 
-  static pw.Widget _summaryItem(String title, String value, {PdfColor color = PdfColors.black}) {
+  static pw.Widget _summaryItem(String title, String value,
+      {PdfColor color = PdfColors.black}) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(title, style: const pw.TextStyle(color: PdfColors.grey700)),
-        pw.Text(value, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16, color: color)),
+        pw.Text(value,
+            style: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold, fontSize: 16, color: color)),
       ],
     );
   }
@@ -101,11 +112,11 @@ class PdfGenerator {
     final headers = ['Severity', 'Location (Lat, Lon)', 'Area (ha)'];
 
     final data = reportData.mostSevereDetections.map((item) {
-      final center = item['center_coordinates'];
+      final center = item['position'];
       return [
         item['severity']?.toString() ?? 'N/A',
-        '${center['latitude'].toStringAsFixed(4)}, ${center['longitude'].toStringAsFixed(4)}',
-        (item['area_ha'] as num?)?.toStringAsFixed(2) ?? 'N/A',
+        '${center['lat'].toStringAsFixed(4)}, ${center['lon'].toStringAsFixed(4)}',
+        'N/A', // area_ha is no longer available
       ];
     }).toList();
 
@@ -113,7 +124,8 @@ class PdfGenerator {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.SizedBox(height: 20),
-        pw.Text('Most Significant Detections', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+        pw.Text('Most Significant Detections',
+            style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 10),
         pw.Table.fromTextArray(
           headers: headers,

@@ -63,10 +63,9 @@ class _ReportScreenState extends State<ReportScreen> {
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        title: Text('Impact Report', style: kAppTitleStyle),
+        title: const Text('Impact Report'),
         backgroundColor: kBackgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: kWhiteColor),
         actions: [
           IconButton(
             icon: _isProcessing
@@ -119,7 +118,6 @@ class _ReportScreenState extends State<ReportScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          // Since the new API provides a snapshot, we show a single date.
           'Report Date: ${DateFormat.yMMMd().format(widget.reportData.endDate)}',
           style: kSecondaryBodyTextStyle,
         ),
@@ -170,7 +168,6 @@ class _ReportScreenState extends State<ReportScreen> {
           _buildBar('Critical', widget.reportData.criticalAlerts,
               Colors.red.shade400),
           const SizedBox(height: 12),
-          // The new API doesn't have "High" severity, but we can leave the UI for future use.
           _buildBar(
               'High', widget.reportData.highAlerts, Colors.orange.shade400),
           const SizedBox(height: 12),
