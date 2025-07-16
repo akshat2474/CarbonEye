@@ -20,12 +20,10 @@ class ApiService {
         return jsonDecode(response.body);
       } else {
         final errorBody = jsonDecode(response.body);
-        print('API Error: ${response.statusCode} - ${errorBody['detail']}');
         throw Exception(
             'Failed to get images: ${errorBody['detail'] ?? 'Unknown error'}');
       }
     } catch (e) {
-      print('Network or parsing error: $e');
       throw Exception('Failed to connect to the image service.');
     }
   }

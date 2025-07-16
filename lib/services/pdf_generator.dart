@@ -75,16 +75,14 @@ class PdfGenerator {
           children: [
             _summaryItem(
                 'Total Detections:', reportData.totalDetections.toString()),
-            _summaryItem(
-                'Total Area:', '${reportData.totalAreaHa.toStringAsFixed(2)} ha'),
+            _summaryItem('Critical Alerts:', reportData.criticalAlerts.toString(),
+                color: PdfColors.red),
           ],
         ),
         pw.SizedBox(height: 10),
         pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
-            _summaryItem('Critical Alerts:', reportData.criticalAlerts.toString(),
-                color: PdfColors.red),
             _summaryItem('High Alerts:', reportData.highAlerts.toString(),
                 color: PdfColors.orange),
             _summaryItem('Medium Alerts:', reportData.mediumAlerts.toString(),
@@ -109,14 +107,13 @@ class PdfGenerator {
   }
 
   static pw.Widget _buildDetectionsTable(ReportData reportData) {
-    final headers = ['Severity', 'Location (Lat, Lon)', 'Area (ha)'];
+    final headers = ['Severity', 'Location (Lat, Lon)'];
 
     final data = reportData.mostSevereDetections.map((item) {
       final center = item['position'];
       return [
         item['severity']?.toString() ?? 'N/A',
         '${center['lat'].toStringAsFixed(4)}, ${center['lon'].toStringAsFixed(4)}',
-        'N/A', // area_ha is no longer available
       ];
     }).toList();
 
@@ -137,7 +134,6 @@ class PdfGenerator {
           cellAlignments: {
             0: pw.Alignment.centerLeft,
             1: pw.Alignment.center,
-            2: pw.Alignment.centerRight,
           },
         ),
       ],

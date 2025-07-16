@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:carboneye/models/watchlist_item.dart';
 import 'package:carboneye/screens/all_alerts_screen.dart';
 import 'package:carboneye/screens/annotation_screen.dart';
@@ -16,7 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:carboneye/services/report_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,40 +38,16 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isSelectionMode = false;
   List<LatLng> _selectionPoints = [];
 
-  final ReportService _reportService = ReportService();
 
-  void _generateReport() async {
-    if (_activeWatchlistItem == null || _detections.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please run an analysis first to generate a report."),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    try {
-      await _reportService.generateReport(
-          _activeWatchlistItem!.name, _detections);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Report generated successfully!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Failed to generate report: $e"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+  @override
+  void initState() {
+    super.initState();
+    // if (_watchlistRegions.isNotEmpty) {
+    //   _runAnalysis(_watchlistRegions.first);
+    // }
   }
-  
 
-// State variables for all four images
+
   String? _t0TrueColorImageBase64;
   String? _t1TrueColorImageBase64;
   String? _t0NDVIImageBase64;
@@ -101,7 +77,6 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   final Map<String, dynamic> _availableForestsData = {
-// India
     'Ranthambore National Park, India': {
       'coordinates': const LatLng(26.01, 76.50),
       'bbox': [76.30, 25.81, 76.70, 26.21]
@@ -130,8 +105,6 @@ class _HomeScreenState extends State<HomeScreen> {
       'coordinates': const LatLng(10.0, 77.0),
       'bbox': [76.8, 9.8, 77.2, 10.2]
     },
-
-// World
     'Borneo, Indonesia': {
       'coordinates': const LatLng(1.0, 114.0),
       'bbox': [113.8, 0.8, 114.2, 1.2]
@@ -194,7 +167,12 @@ class _HomeScreenState extends State<HomeScreen> {
         _t0NDVIImageBase64 = result['past']['ndvi'];
         _t1TrueColorImageBase64 = result['today']['trueColor'];
         _t1NDVIImageBase64 = result['today']['ndvi'];
-        _detections.addAll(List<Map<String, dynamic>>.from(result['alerts']));
+
+        if (result['alerts'] != null) {
+          final alerts = List<Map<String, dynamic>>.from(result['alerts']);
+          _detections.addAll(alerts);
+        }
+
         _lastSynced = DateTime.now();
       });
 
@@ -318,7 +296,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-// CORRECTED: This widget now correctly displays a 2x2 grid
   Widget _buildImageComparison() {
     return Padding(
       padding: const EdgeInsets.only(top: 24.0),
@@ -450,8 +427,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return NeuCard(
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
         _buildStatItem("Active Alerts", _detections.length.toString()),
-        _buildStatItem("Regions", _watchlistRegions.length.toString()),
-        _buildStatItem("Area (ha)", _calculateTotalArea()),
+        _buildStatItem(
+            "Regions Monitored", 22.toString()),
       ]),
     ).animate().slideY(delay: 200.ms, duration: 400.ms, curve: Curves.easeOut);
   }
@@ -601,8 +578,8 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(width: 12),
         TextButton(
             onPressed: _toggleSelectionMode,
-            child: const Text("Cancel"),
-            style: TextButton.styleFrom(foregroundColor: kWhiteColor)),
+            style: TextButton.styleFrom(foregroundColor: kWhiteColor),
+            child: const Text("Cancel")),
         ElevatedButton.icon(
           onPressed: canAnalyze ? _runAnalysisOnSelection : null,
           icon: const Icon(Icons.analytics_outlined, size: 18),
@@ -668,15 +645,6 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(builder: (context) => const SettingsScreen())),
       ),
     ]);
-  }
-
-  String _calculateTotalArea() {
-    if (_detections.isEmpty) return "0";
-    final totalHa = _detections.fold<double>(
-        0.0, (sum, item) => sum + (item['area_ha'] ?? 0.0));
-    if (totalHa > 1000000) return '${(totalHa / 1000000).toStringAsFixed(1)}M';
-    if (totalHa > 1000) return '${(totalHa / 1000).toStringAsFixed(1)}K';
-    return totalHa.toStringAsFixed(0);
   }
 
   List<Marker> _buildWatchlistMarkers() {
