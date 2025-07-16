@@ -5,7 +5,7 @@ import 'package:carboneye/widgets/neu_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart'; 
+import 'package:share_plus/share_plus.dart';
 
 class ReportScreen extends StatefulWidget {
   final ReportData reportData;
@@ -22,6 +22,8 @@ class _ReportScreenState extends State<ReportScreen> {
   Future<void> _handlePdfGeneration() async {
     setState(() => _isProcessing = true);
     try {
+      // Note: pdf_generator.dart might also need updates if it directly
+      // accesses location data in the same way this screen did.
       await PdfGenerator.generateAndPrintReport(widget.reportData);
     } catch (e) {
       if (mounted) {
@@ -42,7 +44,8 @@ class _ReportScreenState extends State<ReportScreen> {
       final file = await PdfGenerator.generateReportFile(widget.reportData);
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'CarbonEye Deforestation Report for ${widget.reportData.region.name}',
+        text:
+            'CarbonEye Deforestation Report for ${widget.reportData.region.name}',
       );
     } catch (e) {
       if (mounted) {
@@ -68,7 +71,7 @@ class _ReportScreenState extends State<ReportScreen> {
         actions: [
           IconButton(
             icon: _isProcessing
-                ? const SizedBox.shrink() 
+                ? const SizedBox.shrink()
                 : const Icon(Icons.picture_as_pdf_outlined),
             tooltip: 'Download as PDF',
             onPressed: _isProcessing ? null : _handlePdfGeneration,
@@ -117,7 +120,8 @@ class _ReportScreenState extends State<ReportScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Report Period: ${DateFormat.yMMMd().format(widget.reportData.startDate)} - ${DateFormat.yMMMd().format(widget.reportData.endDate)}',
+          // Since the new API provides a snapshot, we show a single date.
+          'Report Date: ${DateFormat.yMMMd().format(widget.reportData.endDate)}',
           style: kSecondaryBodyTextStyle,
         ),
       ],
@@ -134,8 +138,8 @@ class _ReportScreenState extends State<ReportScreen> {
             'Critical Alerts', widget.reportData.criticalAlerts.toString(),
             color: Colors.red.shade300),
         const SizedBox(height: 12),
-        _buildMetricCard('High Alerts', widget.reportData.highAlerts.toString(),
-            color: Colors.orange.shade300),
+        _buildMetricCard('Medium Alerts', widget.reportData.mediumAlerts.toString(),
+            color: Colors.yellow.shade300),
       ],
     );
   }
@@ -164,11 +168,15 @@ class _ReportScreenState extends State<ReportScreen> {
           Text('Detections by Severity',
               style: kBodyTextStyle.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          _buildBar('Critical', widget.reportData.criticalAlerts, Colors.red.shade400),
+          _buildBar('Critical', widget.reportData.criticalAlerts,
+              Colors.red.shade400),
           const SizedBox(height: 12),
-          _buildBar('High', widget.reportData.highAlerts, Colors.orange.shade400),
+          // The new API doesn't have "High" severity, but we can leave the UI for future use.
+          _buildBar(
+              'High', widget.reportData.highAlerts, Colors.orange.shade400),
           const SizedBox(height: 12),
-          _buildBar('Medium', widget.reportData.mediumAlerts, Colors.yellow.shade400),
+          _buildBar('Medium', widget.reportData.mediumAlerts,
+              Colors.yellow.shade400),
         ],
       ),
     );
@@ -213,13 +221,13 @@ class _ReportScreenState extends State<ReportScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Most Significant Detections',
+        Text('Detection List',
             style: kSectionTitleStyle.copyWith(fontSize: 20)),
         const SizedBox(height: 12),
         if (widget.reportData.mostSevereDetections.isEmpty)
           NeuCard(
             child: Center(
-                child: Text('No significant detections in this period.',
+                child: Text('No detections in this period.',
                     style: kSecondaryBodyTextStyle)),
           )
         else
@@ -229,15 +237,14 @@ class _ReportScreenState extends State<ReportScreen> {
             itemCount: widget.reportData.mostSevereDetections.length,
             itemBuilder: (context, index) {
               final detection = widget.reportData.mostSevereDetections[index];
-              final center = detection['center_coordinates'];
+              // *** FIX STARTS HERE ***
+              // Use the new 'position' key instead of 'center_coordinates'
+              final position = detection['position'];
               final severity = detection['severity']?.toString() ?? 'Medium';
-              double areaValue = 0.0;
-              if (detection['area_ha'] != null && detection['area_ha'] is num) {
-                areaValue = detection['area_ha'];
-              }
 
               return NeuCard(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -249,23 +256,26 @@ class _ReportScreenState extends State<ReportScreen> {
                               style: kBodyTextStyle.copyWith(
                                   fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
-                          Text(
-                              'Location: ${center['latitude'].toStringAsFixed(4)}, ${center['longitude'].toStringAsFixed(4)}',
-                              style: kSecondaryBodyTextStyle,
-                              overflow: TextOverflow.ellipsis),
+                          // Check if position is not null before accessing lat/lon
+                          if (position != null &&
+                              position['lat'] != null &&
+                              position['lon'] != null)
+                            Text(
+                                'Location: ${position['lat'].toStringAsFixed(4)}, ${position['lon'].toStringAsFixed(4)}',
+                                style: kSecondaryBodyTextStyle,
+                                overflow: TextOverflow.ellipsis)
+                          else
+                            Text('Location: N/A',
+                                style: kSecondaryBodyTextStyle),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    if (areaValue > 0)
-                      Text(
-                        '${areaValue.toStringAsFixed(2)} ha',
-                        style: kBodyTextStyle.copyWith(
-                            color: kAccentColor, fontWeight: FontWeight.bold),
-                      )
+                    // The 'area_ha' key is no longer available in the new API response.
+                    // So, the area text is removed.
                   ],
                 ),
               );
+              // *** FIX ENDS HERE ***
             },
             separatorBuilder: (context, index) => const SizedBox(height: 8),
           ),

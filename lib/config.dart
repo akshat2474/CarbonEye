@@ -1,3 +1,3 @@
 class AppConfig {
-  static const String baseUrl = 'https://carboneye-3.onrender.com';
+  static const String baseUrl = 'https://carboneye.onrender.com';
 }

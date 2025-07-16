@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   Future<Map<String, dynamic>> getImagesForRegion(List<double> bbox) async {
-    final uri = Uri.parse('${AppConfig.baseUrl}/stream-image');
+    final uri = Uri.parse('${AppConfig.baseUrl}/analyze-deforestation');
     try {
       final response = await http.post(
         uri,

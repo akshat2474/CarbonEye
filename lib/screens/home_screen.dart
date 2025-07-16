@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:carboneye/services/report_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -36,6 +37,39 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isSelectionMode = false;
   List<LatLng> _selectionPoints = [];
+
+  final ReportService _reportService = ReportService();
+
+  void _generateReport() async {
+    if (_activeWatchlistItem == null || _detections.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please run an analysis first to generate a report."),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      await _reportService.generateReport(
+          _activeWatchlistItem!.name, _detections);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Report generated successfully!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to generate report: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  
 
 // State variables for all four images
   String? _t0TrueColorImageBase64;
@@ -155,18 +189,18 @@ class _HomeScreenState extends State<HomeScreen> {
       final result = await _apiService.getImagesForRegion(item.bbox);
       if (!mounted) return;
 
-// Extract all four images from the API response
       setState(() {
         _t0TrueColorImageBase64 = result['past']['trueColor'];
         _t0NDVIImageBase64 = result['past']['ndvi'];
         _t1TrueColorImageBase64 = result['today']['trueColor'];
         _t1NDVIImageBase64 = result['today']['ndvi'];
+        _detections.addAll(List<Map<String, dynamic>>.from(result['alerts']));
         _lastSynced = DateTime.now();
       });
 
       _mapController.move(item.coordinates, 8.0);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Images loaded for ${item.name}."),
+        content: Text("Analysis complete for ${item.name}."),
         backgroundColor: Colors.green.shade700,
       ));
     } catch (e) {
@@ -180,9 +214,30 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-// This is now empty as detections are not available from the new backend
   List<Marker> _buildDetectionMarkers() {
-    return [];
+    return _detections.map((detection) {
+      final position = detection['position'];
+      final severity =
+          detection['severity']?.toString().toLowerCase() ?? 'moderate';
+      final color =
+          severity == 'critical' ? Colors.red.shade400 : Colors.orange.shade400;
+
+      return Marker(
+        width: 18.0,
+        height: 18.0,
+        point: LatLng(position['lat'], position['lon']),
+        child: GestureDetector(
+          onTap: () => _showDetectionDetailsDialog(detection),
+          child: Container(
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.7),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+          ),
+        ),
+      );
+    }).toList();
   }
 
   @override
