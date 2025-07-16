@@ -22,8 +22,6 @@ class _ReportScreenState extends State<ReportScreen> {
   Future<void> _handlePdfGeneration() async {
     setState(() => _isProcessing = true);
     try {
-      // Note: pdf_generator.dart might also need updates if it directly
-      // accesses location data in the same way this screen did.
       await PdfGenerator.generateAndPrintReport(widget.reportData);
     } catch (e) {
       if (mounted) {
@@ -65,9 +63,10 @@ class _ReportScreenState extends State<ReportScreen> {
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        title: const Text('Impact Report'),
+        title: Text('Impact Report', style: kAppTitleStyle),
         backgroundColor: kBackgroundColor,
         elevation: 0,
+        iconTheme: const IconThemeData(color: kWhiteColor),
         actions: [
           IconButton(
             icon: _isProcessing
@@ -237,8 +236,6 @@ class _ReportScreenState extends State<ReportScreen> {
             itemCount: widget.reportData.mostSevereDetections.length,
             itemBuilder: (context, index) {
               final detection = widget.reportData.mostSevereDetections[index];
-              // *** FIX STARTS HERE ***
-              // Use the new 'position' key instead of 'center_coordinates'
               final position = detection['position'];
               final severity = detection['severity']?.toString() ?? 'Medium';
 
@@ -256,7 +253,6 @@ class _ReportScreenState extends State<ReportScreen> {
                               style: kBodyTextStyle.copyWith(
                                   fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
-                          // Check if position is not null before accessing lat/lon
                           if (position != null &&
                               position['lat'] != null &&
                               position['lon'] != null)
@@ -270,12 +266,9 @@ class _ReportScreenState extends State<ReportScreen> {
                         ],
                       ),
                     ),
-                    // The 'area_ha' key is no longer available in the new API response.
-                    // So, the area text is removed.
                   ],
                 ),
               );
-              // *** FIX ENDS HERE ***
             },
             separatorBuilder: (context, index) => const SizedBox(height: 8),
           ),
