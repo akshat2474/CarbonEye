@@ -1,0 +1,11 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="io.achim.haptic_feedback" >
+4
+5    <uses-sdk android:minSdkVersion="16" />
+6
+7    <uses-permission android:name="android.permission.VIBRATE" />
+7-->/Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml:3:5-65
+7-->/Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml:3:22-63
+8
+9</manifest>

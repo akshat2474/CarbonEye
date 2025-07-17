@@ -1,0 +1,321 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.carbon_eye"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="21"
+9        android:targetSdkVersion="35" />
+10    <!--
+11         The INTERNET permission is required for development. Specifically,
+12         the Flutter tool needs it to communicate with the running application
+13         to allow setting breakpoints, to provide hot reload, etc.
+14    -->
+15    <uses-permission android:name="android.permission.INTERNET" />
+15-->/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/src/debug/AndroidManifest.xml:6:5-66
+15-->/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/src/debug/AndroidManifest.xml:6:22-64
+16    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+16-->/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/src/main/AndroidManifest.xml:2:5-76
+16-->/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/src/main/AndroidManifest.xml:2:22-74
+17    <!--
+18 Required to query activities that can process text, see:
+19         https://developer.android.com/training/package-visibility and
+20         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+21
+22         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin.
+23    -->
+24    <queries>
+24-->/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/src/main/AndroidManifest.xml:42:5-47:15
+25        <intent>
+25-->/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/src/main/AndroidManifest.xml:43:9-46:18
+26            <action android:name="android.intent.action.PROCESS_TEXT" />
+26-->/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/src/main/AndroidManifest.xml:44:13-72
+26-->/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/src/main/AndroidManifest.xml:44:21-70
+27
+28            <data android:mimeType="text/plain" />
+28-->/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/src/main/AndroidManifest.xml:45:13-50
+28-->/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/src/main/AndroidManifest.xml:45:19-48
+29        </intent>
+30    </queries>
+31
+32    <uses-permission android:name="android.permission.VIBRATE" /> <!-- Although the *SdkVersion is captured in gradle build files, this is required for non gradle builds -->
+32-->[:haptic_feedback] /Users/akshat/Desktop/Apps/carbon_eye/app/build/haptic_feedback/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:7:5-66
+32-->[:haptic_feedback] /Users/akshat/Desktop/Apps/carbon_eye/app/build/haptic_feedback/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:7:22-63
+33    <!-- <uses-sdk android:minSdkVersion="21" /> -->
+34    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+34-->[com.google.firebase:firebase-firestore:25.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/71dfff4c4c9dbdbdef0d76cde4a5f58d/transformed/jetified-firebase-firestore-25.0.0/AndroidManifest.xml:10:5-79
+34-->[com.google.firebase:firebase-firestore:25.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/71dfff4c4c9dbdbdef0d76cde4a5f58d/transformed/jetified-firebase-firestore-25.0.0/AndroidManifest.xml:10:22-76
+35
+36    <permission
+36-->[androidx.core:core:1.13.1] /Users/akshat/.gradle/caches/8.10.2/transforms/dfc2fbca530748e569b0737b09fa016f/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
+37        android:name="com.example.carbon_eye.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+37-->[androidx.core:core:1.13.1] /Users/akshat/.gradle/caches/8.10.2/transforms/dfc2fbca530748e569b0737b09fa016f/transformed/core-1.13.1/AndroidManifest.xml:23:9-81
+38        android:protectionLevel="signature" />
+38-->[androidx.core:core:1.13.1] /Users/akshat/.gradle/caches/8.10.2/transforms/dfc2fbca530748e569b0737b09fa016f/transformed/core-1.13.1/AndroidManifest.xml:24:9-44
+39
+40    <uses-permission android:name="com.example.carbon_eye.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+40-->[androidx.core:core:1.13.1] /Users/akshat/.gradle/caches/8.10.2/transforms/dfc2fbca530748e569b0737b09fa016f/transformed/core-1.13.1/AndroidManifest.xml:26:5-97
+40-->[androidx.core:core:1.13.1] /Users/akshat/.gradle/caches/8.10.2/transforms/dfc2fbca530748e569b0737b09fa016f/transformed/core-1.13.1/AndroidManifest.xml:26:22-94
+41
+42    <application
+43        android:name="android.app.Application"
+44        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+44-->[androidx.core:core:1.13.1] /Users/akshat/.gradle/caches/8.10.2/transforms/dfc2fbca530748e569b0737b09fa016f/transformed/core-1.13.1/AndroidManifest.xml:28:18-86
+45        android:debuggable="true"
+46        android:enableOnBackInvokedCallback="true"
+47        android:extractNativeLibs="true"
+48        android:icon="@mipmap/ic_launcher"
+49        android:label="CarbonEye" >
+50        <receiver
+51            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
+52            android:exported="false" />
+53
+54        <activity
+55            android:name="com.example.carbon_eye.MainActivity"
+56            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+57            android:exported="true"
+58            android:hardwareAccelerated="true"
+59            android:launchMode="singleTop"
+60            android:taskAffinity=""
+61            android:theme="@style/LaunchTheme"
+62            android:windowSoftInputMode="adjustResize" >
+63
+64            <!--
+65                 Specifies an Android theme to apply to this Activity as soon as
+66                 the Android process has started. This theme is visible to the user
+67                 while the Flutter UI initializes. After that, this theme continues
+68                 to determine the Window background behind the Flutter UI.
+69            -->
+70            <meta-data
+71                android:name="io.flutter.embedding.android.NormalTheme"
+72                android:resource="@style/NormalTheme" />
+73
+74            <intent-filter>
+75                <action android:name="android.intent.action.MAIN" />
+76
+77                <category android:name="android.intent.category.LAUNCHER" />
+78            </intent-filter>
+79        </activity>
+80        <!--
+81             Don't delete the meta-data below.
+82             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java
+83        -->
+84        <meta-data
+85            android:name="flutterEmbedding"
+86            android:value="2" />
+87
+88        <service
+88-->[:cloud_firestore] /Users/akshat/Desktop/Apps/carbon_eye/app/build/cloud_firestore/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:8:9-12:19
+89            android:name="com.google.firebase.components.ComponentDiscoveryService"
+89-->[:cloud_firestore] /Users/akshat/Desktop/Apps/carbon_eye/app/build/cloud_firestore/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:8:18-89
+90            android:directBootAware="true"
+90-->[com.google.firebase:firebase-common:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/4f9c14ceb4252ecea9b72e1c704cd308/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:32:13-43
+91            android:exported="false" >
+91-->[com.google.firebase:firebase-firestore:25.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/71dfff4c4c9dbdbdef0d76cde4a5f58d/transformed/jetified-firebase-firestore-25.0.0/AndroidManifest.xml:16:13-37
+92            <meta-data
+92-->[:cloud_firestore] /Users/akshat/Desktop/Apps/carbon_eye/app/build/cloud_firestore/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:9:13-11:85
+93                android:name="com.google.firebase.components:io.flutter.plugins.firebase.firestore.FlutterFirebaseFirestoreRegistrar"
+93-->[:cloud_firestore] /Users/akshat/Desktop/Apps/carbon_eye/app/build/cloud_firestore/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:10:17-134
+94                android:value="com.google.firebase.components.ComponentRegistrar" />
+94-->[:cloud_firestore] /Users/akshat/Desktop/Apps/carbon_eye/app/build/cloud_firestore/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:11:17-82
+95            <meta-data
+95-->[:firebase_core] /Users/akshat/Desktop/Apps/carbon_eye/app/build/firebase_core/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:9:13-11:85
+96                android:name="com.google.firebase.components:io.flutter.plugins.firebase.core.FlutterFirebaseCoreRegistrar"
+96-->[:firebase_core] /Users/akshat/Desktop/Apps/carbon_eye/app/build/firebase_core/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:10:17-124
+97                android:value="com.google.firebase.components.ComponentRegistrar" />
+97-->[:firebase_core] /Users/akshat/Desktop/Apps/carbon_eye/app/build/firebase_core/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:11:17-82
+98            <meta-data
+98-->[com.google.firebase:firebase-firestore:25.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/71dfff4c4c9dbdbdef0d76cde4a5f58d/transformed/jetified-firebase-firestore-25.0.0/AndroidManifest.xml:17:13-19:85
+99                android:name="com.google.firebase.components:com.google.firebase.firestore.FirebaseFirestoreKtxRegistrar"
+99-->[com.google.firebase:firebase-firestore:25.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/71dfff4c4c9dbdbdef0d76cde4a5f58d/transformed/jetified-firebase-firestore-25.0.0/AndroidManifest.xml:18:17-122
+100                android:value="com.google.firebase.components.ComponentRegistrar" />
+100-->[com.google.firebase:firebase-firestore:25.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/71dfff4c4c9dbdbdef0d76cde4a5f58d/transformed/jetified-firebase-firestore-25.0.0/AndroidManifest.xml:19:17-82
+101            <meta-data
+101-->[com.google.firebase:firebase-firestore:25.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/71dfff4c4c9dbdbdef0d76cde4a5f58d/transformed/jetified-firebase-firestore-25.0.0/AndroidManifest.xml:20:13-22:85
+102                android:name="com.google.firebase.components:com.google.firebase.firestore.FirestoreRegistrar"
+102-->[com.google.firebase:firebase-firestore:25.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/71dfff4c4c9dbdbdef0d76cde4a5f58d/transformed/jetified-firebase-firestore-25.0.0/AndroidManifest.xml:21:17-111
+103                android:value="com.google.firebase.components.ComponentRegistrar" />
+103-->[com.google.firebase:firebase-firestore:25.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/71dfff4c4c9dbdbdef0d76cde4a5f58d/transformed/jetified-firebase-firestore-25.0.0/AndroidManifest.xml:22:17-82
+104            <meta-data
+104-->[com.google.firebase:firebase-common-ktx:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/86c56102242d4d33b3606123644675d7/transformed/jetified-firebase-common-ktx-21.0.0/AndroidManifest.xml:12:13-14:85
+105                android:name="com.google.firebase.components:com.google.firebase.ktx.FirebaseCommonLegacyRegistrar"
+105-->[com.google.firebase:firebase-common-ktx:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/86c56102242d4d33b3606123644675d7/transformed/jetified-firebase-common-ktx-21.0.0/AndroidManifest.xml:13:17-116
+106                android:value="com.google.firebase.components.ComponentRegistrar" />
+106-->[com.google.firebase:firebase-common-ktx:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/86c56102242d4d33b3606123644675d7/transformed/jetified-firebase-common-ktx-21.0.0/AndroidManifest.xml:14:17-82
+107            <meta-data
+107-->[com.google.firebase:firebase-common:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/4f9c14ceb4252ecea9b72e1c704cd308/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:35:13-37:85
+108                android:name="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar"
+108-->[com.google.firebase:firebase-common:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/4f9c14ceb4252ecea9b72e1c704cd308/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:36:17-109
+109                android:value="com.google.firebase.components.ComponentRegistrar" />
+109-->[com.google.firebase:firebase-common:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/4f9c14ceb4252ecea9b72e1c704cd308/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:37:17-82
+110        </service>
+111        <!--
+112           Declares a provider which allows us to store files to share in
+113           '.../caches/share_plus' and grant the receiving action access
+114        -->
+115        <provider
+115-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:13:9-21:20
+116            android:name="dev.fluttercommunity.plus.share.ShareFileProvider"
+116-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:14:13-77
+117            android:authorities="com.example.carbon_eye.flutter.share_provider"
+117-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:15:13-74
+118            android:exported="false"
+118-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:16:13-37
+119            android:grantUriPermissions="true" >
+119-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:17:13-47
+120            <meta-data
+120-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:18:13-20:68
+121                android:name="android.support.FILE_PROVIDER_PATHS"
+121-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:19:17-67
+122                android:resource="@xml/flutter_share_file_paths" />
+122-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:20:17-65
+123        </provider>
+124        <!--
+125           This manifest declared broadcast receiver allows us to use an explicit
+126           Intent when creating a PendingItent to be informed of the user's choice
+127        -->
+128        <receiver
+128-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:26:9-32:20
+129            android:name="dev.fluttercommunity.plus.share.SharePlusPendingIntent"
+129-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:27:13-82
+130            android:exported="false" >
+130-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:28:13-37
+131            <intent-filter>
+131-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:29:13-31:29
+132                <action android:name="EXTRA_CHOSEN_COMPONENT" />
+132-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:30:17-65
+132-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:30:25-62
+133            </intent-filter>
+134        </receiver>
+135
+136        <activity
+136-->[:url_launcher_android] /Users/akshat/Desktop/Apps/carbon_eye/app/build/url_launcher_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:8:9-11:74
+137            android:name="io.flutter.plugins.urllauncher.WebViewActivity"
+137-->[:url_launcher_android] /Users/akshat/Desktop/Apps/carbon_eye/app/build/url_launcher_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:9:13-74
+138            android:exported="false"
+138-->[:url_launcher_android] /Users/akshat/Desktop/Apps/carbon_eye/app/build/url_launcher_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:10:13-37
+139            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+139-->[:url_launcher_android] /Users/akshat/Desktop/Apps/carbon_eye/app/build/url_launcher_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:11:13-71
+140
+141        <provider
+141-->[:printing] /Users/akshat/Desktop/Apps/carbon_eye/app/build/printing/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:8:9-16:20
+142            android:name="net.nfet.flutter.printing.PrintFileProvider"
+142-->[:printing] /Users/akshat/Desktop/Apps/carbon_eye/app/build/printing/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:9:13-71
+143            android:authorities="com.example.carbon_eye.flutter.printing"
+143-->[:printing] /Users/akshat/Desktop/Apps/carbon_eye/app/build/printing/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:10:13-68
+144            android:exported="false"
+144-->[:printing] /Users/akshat/Desktop/Apps/carbon_eye/app/build/printing/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:11:13-37
+145            android:grantUriPermissions="true" >
+145-->[:printing] /Users/akshat/Desktop/Apps/carbon_eye/app/build/printing/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:12:13-47
+146            <meta-data
+146-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:18:13-20:68
+147                android:name="android.support.FILE_PROVIDER_PATHS"
+147-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:19:17-67
+148                android:resource="@xml/flutter_printing_file_paths" />
+148-->[:share_plus] /Users/akshat/Desktop/Apps/carbon_eye/app/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:20:17-65
+149        </provider>
+150
+151        <uses-library
+151-->[androidx.window:window:1.2.0] /Users/akshat/.gradle/caches/8.10.2/transforms/aed2861b2b6894f7067df3f3f96b791f/transformed/jetified-window-1.2.0/AndroidManifest.xml:23:9-25:40
+152            android:name="androidx.window.extensions"
+152-->[androidx.window:window:1.2.0] /Users/akshat/.gradle/caches/8.10.2/transforms/aed2861b2b6894f7067df3f3f96b791f/transformed/jetified-window-1.2.0/AndroidManifest.xml:24:13-54
+153            android:required="false" />
+153-->[androidx.window:window:1.2.0] /Users/akshat/.gradle/caches/8.10.2/transforms/aed2861b2b6894f7067df3f3f96b791f/transformed/jetified-window-1.2.0/AndroidManifest.xml:25:13-37
+154        <uses-library
+154-->[androidx.window:window:1.2.0] /Users/akshat/.gradle/caches/8.10.2/transforms/aed2861b2b6894f7067df3f3f96b791f/transformed/jetified-window-1.2.0/AndroidManifest.xml:26:9-28:40
+155            android:name="androidx.window.sidecar"
+155-->[androidx.window:window:1.2.0] /Users/akshat/.gradle/caches/8.10.2/transforms/aed2861b2b6894f7067df3f3f96b791f/transformed/jetified-window-1.2.0/AndroidManifest.xml:27:13-51
+156            android:required="false" />
+156-->[androidx.window:window:1.2.0] /Users/akshat/.gradle/caches/8.10.2/transforms/aed2861b2b6894f7067df3f3f96b791f/transformed/jetified-window-1.2.0/AndroidManifest.xml:28:13-37
+157
+158        <activity
+158-->[com.google.android.gms:play-services-base:18.0.1] /Users/akshat/.gradle/caches/8.10.2/transforms/d5a90d880711c0baff6cb8ee6cb72f44/transformed/jetified-play-services-base-18.0.1/AndroidManifest.xml:20:9-22:45
+159            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+159-->[com.google.android.gms:play-services-base:18.0.1] /Users/akshat/.gradle/caches/8.10.2/transforms/d5a90d880711c0baff6cb8ee6cb72f44/transformed/jetified-play-services-base-18.0.1/AndroidManifest.xml:20:19-85
+160            android:exported="false"
+160-->[com.google.android.gms:play-services-base:18.0.1] /Users/akshat/.gradle/caches/8.10.2/transforms/d5a90d880711c0baff6cb8ee6cb72f44/transformed/jetified-play-services-base-18.0.1/AndroidManifest.xml:22:19-43
+161            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+161-->[com.google.android.gms:play-services-base:18.0.1] /Users/akshat/.gradle/caches/8.10.2/transforms/d5a90d880711c0baff6cb8ee6cb72f44/transformed/jetified-play-services-base-18.0.1/AndroidManifest.xml:21:19-78
+162
+163        <provider
+163-->[com.google.firebase:firebase-common:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/4f9c14ceb4252ecea9b72e1c704cd308/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:23:9-28:39
+164            android:name="com.google.firebase.provider.FirebaseInitProvider"
+164-->[com.google.firebase:firebase-common:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/4f9c14ceb4252ecea9b72e1c704cd308/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:24:13-77
+165            android:authorities="com.example.carbon_eye.firebaseinitprovider"
+165-->[com.google.firebase:firebase-common:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/4f9c14ceb4252ecea9b72e1c704cd308/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:25:13-72
+166            android:directBootAware="true"
+166-->[com.google.firebase:firebase-common:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/4f9c14ceb4252ecea9b72e1c704cd308/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:26:13-43
+167            android:exported="false"
+167-->[com.google.firebase:firebase-common:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/4f9c14ceb4252ecea9b72e1c704cd308/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:27:13-37
+168            android:initOrder="100" />
+168-->[com.google.firebase:firebase-common:21.0.0] /Users/akshat/.gradle/caches/8.10.2/transforms/4f9c14ceb4252ecea9b72e1c704cd308/transformed/jetified-firebase-common-21.0.0/AndroidManifest.xml:28:13-36
+169        <provider
+169-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/akshat/.gradle/caches/8.10.2/transforms/bb10008c4b33ee9597583412a41828ed/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:24:9-32:20
+170            android:name="androidx.startup.InitializationProvider"
+170-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/akshat/.gradle/caches/8.10.2/transforms/bb10008c4b33ee9597583412a41828ed/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:25:13-67
+171            android:authorities="com.example.carbon_eye.androidx-startup"
+171-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/akshat/.gradle/caches/8.10.2/transforms/bb10008c4b33ee9597583412a41828ed/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:26:13-68
+172            android:exported="false" >
+172-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/akshat/.gradle/caches/8.10.2/transforms/bb10008c4b33ee9597583412a41828ed/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:27:13-37
+173            <meta-data
+173-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/akshat/.gradle/caches/8.10.2/transforms/bb10008c4b33ee9597583412a41828ed/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
+174                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+174-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/akshat/.gradle/caches/8.10.2/transforms/bb10008c4b33ee9597583412a41828ed/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
+175                android:value="androidx.startup" />
+175-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/akshat/.gradle/caches/8.10.2/transforms/bb10008c4b33ee9597583412a41828ed/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
+176            <meta-data
+176-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+177                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+177-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+178                android:value="androidx.startup" />
+178-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+179        </provider>
+180
+181        <meta-data
+181-->[com.google.android.gms:play-services-basement:18.3.0] /Users/akshat/.gradle/caches/8.10.2/transforms/48bb13e58e49cdf1e6377472107b28a8/transformed/jetified-play-services-basement-18.3.0/AndroidManifest.xml:21:9-23:69
+182            android:name="com.google.android.gms.version"
+182-->[com.google.android.gms:play-services-basement:18.3.0] /Users/akshat/.gradle/caches/8.10.2/transforms/48bb13e58e49cdf1e6377472107b28a8/transformed/jetified-play-services-basement-18.3.0/AndroidManifest.xml:22:13-58
+183            android:value="@integer/google_play_services_version" />
+183-->[com.google.android.gms:play-services-basement:18.3.0] /Users/akshat/.gradle/caches/8.10.2/transforms/48bb13e58e49cdf1e6377472107b28a8/transformed/jetified-play-services-basement-18.3.0/AndroidManifest.xml:23:13-66
+184
+185        <receiver
+185-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+186            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+186-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+187            android:directBootAware="false"
+187-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+188            android:enabled="true"
+188-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+189            android:exported="true"
+189-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+190            android:permission="android.permission.DUMP" >
+190-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+191            <intent-filter>
+191-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+192                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+192-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+192-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+193            </intent-filter>
+194            <intent-filter>
+194-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+195                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+195-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+195-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+196            </intent-filter>
+197            <intent-filter>
+197-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+198                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+198-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+198-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+199            </intent-filter>
+200            <intent-filter>
+200-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+201                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+201-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+201-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/akshat/.gradle/caches/8.10.2/transforms/5aacd87baa6feaa7bece87b01e7698f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
+202            </intent-filter>
+203        </receiver>
+204    </application>
+205
+206</manifest>

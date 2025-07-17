@@ -1,0 +1,21 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml:1:1-4:12
+INJECTED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml:1:1-4:12
+	package
+		ADDED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml:2:3-37
+		INJECTED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml:1:11-69
+uses-permission#android.permission.VIBRATE
+ADDED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml:3:5-65
+	android:name
+		ADDED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml:3:22-63
+uses-sdk
+INJECTED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml
+INJECTED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/akshat/.pub-cache/hosted/pub.dev/haptic_feedback-0.4.2/android/src/main/AndroidManifest.xml
