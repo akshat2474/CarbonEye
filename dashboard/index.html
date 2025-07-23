@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Environmental Dashboard</title>
-    <link rel="icon" type="image/png" href="assets/final1.png" />
+    <link rel="icon" type="image/png" href="../assets/final1.png" />
     <link rel="stylesheet" href="dashb.css" />
   </head>
   <body>
@@ -104,7 +104,7 @@
           <div class="dashboard-item" onclick="analyzeRegion()">
             <div class="dashboard-icon">
               <img
-                src="assets/target.svg"
+                src="../assets/target.svg"
                 alt="Target Icon"
                 width="24"
                 height="24"
@@ -119,7 +119,7 @@
           <div class="dashboard-item" onclick="viewAlerts()">
             <div class="dashboard-icon">
               <img
-                src="assets/bell.svg"
+                src="../assets/bell.svg"
                 alt="Bell Icon"
                 width="24"
                 height="24"
@@ -133,7 +133,7 @@
           <div class="dashboard-item" onclick="generateReport()">
             <div class="dashboard-icon">
               <img
-                src="assets/chart.svg"
+                src="../assets/chart.svg"
                 alt="Chart Icon"
                 width="24"
                 height="24"
@@ -186,7 +186,22 @@
         </div>
       </div>
     </div>
-    
+
+    <!-- Popup overlay -->
+    <div id="popupOverlay" class="popup-overlay"></div>
+
+    <!-- Analysis popup -->
+    <div id="analysisPopup" class="analysis-popup">
+      <div class="popup-progress">
+        <div class="popup-progress-bar"></div>
+      </div>
+      <button class="popup-close" onclick="hideAnalysisPopup()">&times;</button>
+      <div class="popup-content">
+        <img src="../assets/demo.png" alt="Demo" class="popup-image" />
+        <p class="popup-text">Click on the dot to see something interesting</p>
+      </div>
+    </div>
+
     <!-- Leaflet CSS & JS -->
     <link
       rel="stylesheet"
@@ -199,6 +214,47 @@
       let alertMarkers = [];
       let currentBbox = null;
       let currentApiData = null;
+
+      let popupTimeout;
+
+      function showAnalysisPopup() {
+        const overlay = document.getElementById("popupOverlay");
+        const popup = document.getElementById("analysisPopup");
+
+        // Show popup
+        overlay.classList.add("show");
+        popup.classList.add("show");
+
+        // Reset progress bar animation
+        const progressBar = popup.querySelector(".popup-progress-bar");
+        progressBar.style.animation = "none";
+        progressBar.offsetHeight; // Trigger reflow
+        progressBar.style.animation = "progressCountdown 5s linear forwards";
+
+        // Auto hide after 5 seconds
+        popupTimeout = setTimeout(() => {
+          hideAnalysisPopup();
+        }, 5000);
+      }
+
+      function hideAnalysisPopup() {
+        const overlay = document.getElementById("popupOverlay");
+        const popup = document.getElementById("analysisPopup");
+
+        overlay.classList.remove("show");
+        popup.classList.remove("show");
+
+        // Clear timeout if manually closed
+        if (popupTimeout) {
+          clearTimeout(popupTimeout);
+          popupTimeout = null;
+        }
+      }
+
+      // Close popup when clicking overlay
+      document
+        .getElementById("popupOverlay")
+        .addEventListener("click", hideAnalysisPopup);
 
       // Navigation Functions
       function goBack() {
@@ -290,6 +346,8 @@
         console.log("Estimated area:", calculateAreaFromBbox(bbox), "hectares");
 
         try {
+          showAnalysisPopup();
+
           const requestBody = { bbox: bbox };
           console.log("Request body:", JSON.stringify(requestBody));
 
@@ -607,6 +665,121 @@ Time Range: ${currentApiData.analysis.timeRange.recent}
       /* Map container positioning for overlay */
       .map-container {
         position: relative;
+      }
+      .analysis-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 400px;
+        padding: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        z-index: 1001;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        text-align: center;
+      }
+
+      .analysis-popup.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .popup-progress {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        right: 15px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .popup-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #27ae60, #2ecc71);
+        border-radius: 2px;
+        width: 100%;
+        animation: progressCountdown 5s linear forwards;
+      }
+
+      @keyframes progressCountdown {
+        from {
+          width: 100%;
+        }
+        to {
+          width: 0%;
+        }
+      }
+
+      .popup-close {
+        position: absolute;
+        top: 20px;
+        right: 25px;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 24px;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+      }
+
+      .popup-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 1);
+      }
+
+      .popup-content {
+        margin-top: 20px;
+      }
+
+      .popup-image {
+        width: 300px;
+        height: 300px;
+        border-radius: 20px;
+        margin: 0 auto 20px;
+        display: block;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .popup-text {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0;
+        line-height: 1.4;
+      }
+
+      .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .popup-overlay.show {
+        opacity: 1;
+        visibility: visible;
       }
     </style>
   </body>
