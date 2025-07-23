@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Actions - Carbon Eye</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .action-card h2 {
+            color: #134e5e;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .action-icon {
+            width: 40px;
+            height: 40px;
+            background: #71b280;
+            border-radius: 50%;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .action-card p {
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .feature-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #71b280;
+        }
+
+        .feature-item strong {
+            color: #134e5e;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: #134e5e;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            margin: 2rem;
+        }
+
+        .back-btn:hover {
+            background: #0f3d4a;
+            transform: translateY(-2px);
+        }
+
+        .satellite-visual {
+            background: linear-gradient(45deg, #134e5e, #71b280);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← Back to Home</a>
+
+    <div class="container">
+        <div class="header">
+            <h1>Our Actions</h1>
+            <p>How Carbon Eye monitors and protects forests through satellite technology</p>
+        </div>
+
+        <div class="action-card">
+            <h2>
+                <div class="action-icon">🛰️</div>
+                Real-Time Satellite Monitoring
+            </h2>
+            <p>We utilize advanced satellite imagery to continuously monitor forest areas worldwide, detecting changes in vegetation and land use patterns.</p>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <strong>15-Day Data Collection:</strong> Comprehensive analysis over two-week periods
+                </div>
+                <div class="feature-item">
+                    <strong>High Resolution:</strong> Sub-meter precision imaging for detailed analysis
+                </div>
+                <div class="feature-item">
+                    <strong>Multi-Spectral Analysis:</strong> Advanced imaging beyond visible spectrum
+                </div>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <h2>
+                <div class="action-icon">🔍</div>
+                AI-Powered Deforestation Detection
+            </h2>
+            <p>Our machine learning algorithms analyze satellite data to identify deforestation patterns and illegal logging activities with high accuracy.</p>
+            <div class="satellite-visual">
+                <p><strong>Detection Accuracy: 94.7%</strong></p>
+                <p>Analysis Period: 15 days</p>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <h2>
+                <div class="action-icon">🚨</div>
+                Deforestation Reporting System
+            </h2>
+            <p>When deforestation is detected through our 15-day analysis cycles, we compile comprehensive reports for relevant authorities and conservation organizations.</p>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <strong>Detailed Reports:</strong> Comprehensive analysis delivered every 15 days
+                </div>
+                <div class="feature-item">
+                    <strong>GPS Coordinates:</strong> Precise location data for affected areas
+                </div>
+                <div class="feature-item">
+                    <strong>Change Detection:</strong> Before and after satellite imagery comparison
+                </div>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <h2>
+                <div class="action-icon">📊</div>
+                Data & Analytics Platform
+            </h2>
+            <p>We provide comprehensive dashboards and reports to help organizations make informed decisions about forest conservation efforts.</p>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <strong>Historical Trends:</strong> Long-term deforestation pattern analysis
+                </div>
+                <div class="feature-item">
+                    <strong>Risk Mapping:</strong> Predictive models for high-risk areas
+                </div>
+                <div class="feature-item">
+                    <strong>Change Documentation:</strong> Detailed forest cover loss tracking
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

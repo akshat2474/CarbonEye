@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About Us - Carbon Eye</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 3rem;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 300;
+      }
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .content {
+        background: white;
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+
+      .mission-section {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      .mission-section h2 {
+        color: #667eea;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+      }
+
+      .mission-text {
+        font-size: 1.1rem;
+        color: #555;
+        font-style: italic;
+        background: #f8f9fa;
+        padding: 2rem;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+      }
+
+      .story-section {
+        margin-bottom: 2rem;
+      }
+
+      .story-section h3 {
+        color: #764ba2;
+        margin-bottom: 1rem;
+      }
+
+      .story-section p {
+        margin-bottom: 1rem;
+        color: #555;
+      }
+
+      .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+      }
+
+      .value-card {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+        border-top: 4px solid #667eea;
+      }
+
+      .value-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+
+      .value-card h4 {
+        color: #667eea;
+        margin-bottom: 0.5rem;
+      }
+
+      .value-card p {
+        font-size: 0.9rem;
+        color: #666;
+      }
+
+      .team-section {
+        background: #f8f9fa;
+        padding: 2rem;
+        border-radius: 8px;
+        margin: 2rem 0;
+      }
+
+      .team-section h3 {
+        color: #764ba2;
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .team-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .team-stat {
+        padding: 1rem;
+      }
+
+      .team-stat .number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #667eea;
+        display: block;
+      }
+
+      .team-stat .label {
+        font-size: 0.9rem;
+        color: #666;
+      }
+
+      .back-btn {
+        display: inline-block;
+        background: #667eea;
+        color: white;
+        padding: 12px 24px;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        margin: 2rem;
+      }
+
+      .back-btn:hover {
+        background: #764ba2;
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+  <body>
+    <a href="index.html" class="back-btn">← Back to Home</a>
+
+    <div class="container">
+      <div class="header">
+        <h1>About Carbon Eye</h1>
+        <p>Protecting forests through innovative satellite technology</p>
+      </div>
+
+      <div class="content">
+        <div class="mission-section">
+          <h2>Our Mission</h2>
+          <div class="mission-text">
+            "To preserve Earth's forests by providing real-time, accurate
+            deforestation monitoring through advanced satellite imaging and AI
+            technology, empowering rapid conservation response worldwide."
+          </div>
+        </div>
+
+        <div class="story-section">
+          <h3>Our Story</h3>
+          <p>
+            Carbon Eye was founded in 2025 by four college sophomore students
+            who shared a common vision: using technology to combat deforestation
+            in an era where global warming has become normalized.
+          </p>
+          <p>
+            As we head into a new world where global warming is seen as normal,
+            we believe it's crucial to take a strong stance against
+            environmental destruction. Our team recognized that traditional
+            monitoring methods weren't sufficient to address the scale of
+            deforestation happening worldwide.
+          </p>
+          <p>
+            What started as a college project has evolved into a comprehensive
+            satellite monitoring system that tracks forest changes across the
+            globe, providing crucial data to support conservation efforts.
+          </p>
+        </div>
+
+        <div class="values-grid">
+          <div class="value-card">
+            <div class="value-icon">🌍</div>
+            <h4>Environmental Impact</h4>
+            <p>
+              Every action we take is measured by its positive impact on forest
+              conservation and climate protection.
+            </p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">🔬</div>
+            <h4>Scientific Rigor</h4>
+            <p>
+              We base our technology on peer-reviewed research and collaborate
+              with leading environmental institutions.
+            </p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">⚡</div>
+            <h4>Rapid Response</h4>
+            <p>
+              Speed is critical in forest protection. Our systems are designed
+              for immediate detection and alert.
+            </p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">🤝</div>
+            <h4>Collaboration</h4>
+            <p>
+              We work closely with local communities, governments, and NGOs to
+              ensure effective conservation outcomes.
+            </p>
+          </div>
+        </div>
+
+        <div class="team-section">
+          <h3>Our Team</h3>
+          <div class="team-stats">
+            <div class="team-stat">
+              <span class="number">4</span>
+              <span class="label">Team Members</span>
+            </div>
+            <div class="team-stat">
+              <span class="number">197</span>
+              <span class="label">Countries Monitored</span>
+            </div>
+            <div class="team-stat">
+              <span class="number">2025</span>
+              <span class="label">Founded</span>
+            </div>
+            <div class="team-stat">
+              <span class="number">Sophomore</span>
+              <span class="label">College Level</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="story-section">
+          <h3>Looking Forward</h3>
+          <p>
+            As we continue to grow, our commitment remains unchanged: leveraging
+            cutting-edge technology to protect the world's forests. We're
+            expanding our monitoring capabilities, developing new AI models, and
+            building partnerships that amplify our conservation impact.
+          </p>
+          <p>
+            Together, we can ensure that future generations inherit a world
+            where forests thrive and biodiversity flourishes.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
