@@ -6,6 +6,254 @@
     <title>Environmental Dashboard</title>
     <link rel="icon" type="image/png" href="../assets/final1.png" />
     <link rel="stylesheet" href="dashb.css" />
+    <style>
+      /* Additional styles for the add location dialog */
+      .add-location-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 500px;
+        max-height: 80vh;
+        padding: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        z-index: 1001;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        color: white;
+      }
+
+      .add-location-popup.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .add-location-popup h2 {
+        margin: 0 0 20px 0;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .locations-grid {
+        max-height: 400px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+      }
+
+      .location-option {
+        padding: 15px;
+        margin: 10px 0;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .location-option:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .location-option.selected {
+        background: rgba(39, 174, 96, 0.2);
+        border-color: rgba(39, 174, 96, 0.5);
+      }
+
+      .location-name {
+        font-size: 16px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .location-check {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .location-option.selected .location-check {
+        background: #27ae60;
+        border-color: #27ae60;
+      }
+
+      .location-check::after {
+        content: "✓";
+        color: white;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .location-option.selected .location-check::after {
+        opacity: 1;
+      }
+
+      .dialog-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .dialog-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .dialog-btn.cancel {
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .dialog-btn.cancel:hover {
+        background: rgba(0, 0, 0, 0.8);
+      }
+
+      .dialog-btn.ok {
+        background: white;
+        color: #333;
+      }
+
+      .dialog-btn.ok:hover {
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .dialog-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Scrollbar styling for webkit browsers */
+      .locations-grid::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .locations-grid::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+      }
+
+      .locations-grid::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+      }
+
+      .locations-grid::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      /* Existing analysis popup styles */
+      .analysis-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 400px;
+        padding: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        z-index: 1001;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        text-align: center;
+      }
+
+      .analysis-popup.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .popup-close {
+        position: absolute;
+        top: 20px;
+        right: 25px;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 24px;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+      }
+
+      .popup-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 1);
+      }
+
+      .popup-content {
+        margin-top: 20px;
+      }
+
+      .popup-image {
+        width: 300px;
+        height: 300px;
+        border-radius: 20px;
+        margin: 0 auto 20px;
+        display: block;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .popup-text {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0;
+        line-height: 1.4;
+      }
+
+      .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .popup-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
@@ -19,10 +267,13 @@
       <div class="section">
         <div class="section-header">
           <h2 class="section-title">My Watchlist</h2>
-          <button class="add-btn" onclick="addToWatchlist()">+ Add</button>
+          <button class="add-btn" onclick="showAddLocationDialog()">
+            + Add
+          </button>
         </div>
 
-        <div class="watchlist-grid">
+        <div class="watchlist-grid" id="watchlistGrid">
+          <!-- Default watchlist items (these will always remain) -->
           <div
             class="watchlist-item"
             onclick="selectWatchlistItem(this, [-62.8800, -10.3500, -62.8700, -10.3400])"
@@ -187,6 +438,30 @@
       </div>
     </div>
 
+    <!-- Add Location Dialog -->
+    <div id="addLocationPopup" class="add-location-popup">
+      <button class="popup-close" onclick="hideAddLocationDialog()">
+        &times;
+      </button>
+      <h2>Add New Location</h2>
+      <div class="locations-grid" id="locationsGrid">
+        <!-- Available locations will be populated here -->
+      </div>
+      <div class="dialog-buttons">
+        <button class="dialog-btn cancel" onclick="hideAddLocationDialog()">
+          Cancel
+        </button>
+        <button
+          class="dialog-btn ok"
+          onclick="addSelectedLocations()"
+          id="okButton"
+          disabled
+        >
+          OK
+        </button>
+      </div>
+    </div>
+
     <!-- Popup overlay -->
     <div id="popupOverlay" class="popup-overlay"></div>
 
@@ -214,24 +489,123 @@
       let alertMarkers = [];
       let currentBbox = null;
       let currentApiData = null;
-
       let popupTimeout;
+      let selectedLocations = new Set();
+
+      // Available locations data converted from Flutter format
+      const availableLocations = {
+        "Amazonas, Brazil": {
+          coordinates: [-3.46, -62.21],
+          bbox: [-62.41, -3.66, -62.01, -3.26],
+        },
+        "Jim Corbett National Park, India": {
+          coordinates: [29.53, 78.77],
+          bbox: [78.57, 29.33, 78.97, 29.73],
+        },
+        "Congo Basin, DRC": {
+          coordinates: [0.5, 23.5],
+          bbox: [23.3, 0.3, 23.7, 0.7],
+        },
+        "Serengeti National Park, Tanzania": {
+          coordinates: [-2.33, 34.83],
+          bbox: [34.63, -2.53, 35.03, -2.13],
+        },
+        "Sundarbans National Park, India": {
+          coordinates: [21.94, 88.85],
+          bbox: [88.65, 21.74, 89.05, 22.14],
+        },
+        "Ranthambore National Park, India": {
+          coordinates: [26.01, 76.5],
+          bbox: [76.3, 25.81, 76.7, 26.21],
+        },
+        "Kanha National Park, India": {
+          coordinates: [22.33, 80.63],
+          bbox: [80.43, 22.13, 80.83, 22.53],
+        },
+        "Bandipur National Park, India": {
+          coordinates: [11.66, 76.63],
+          bbox: [76.43, 11.46, 76.83, 11.86],
+        },
+        "Kaziranga National Park, India": {
+          coordinates: [26.66, 93.35],
+          bbox: [93.15, 26.46, 93.55, 26.86],
+        },
+        "Gir National Park, India": {
+          coordinates: [21.16, 70.79],
+          bbox: [70.59, 20.96, 70.99, 21.36],
+        },
+        "Periyar Wildlife Sanctuary, India": {
+          coordinates: [9.46, 77.14],
+          bbox: [76.94, 9.26, 77.34, 9.66],
+        },
+        "Western Ghats, India": {
+          coordinates: [10.0, 77.0],
+          bbox: [76.8, 9.8, 77.2, 10.2],
+        },
+        "Borneo, Indonesia": {
+          coordinates: [1.0, 114.0],
+          bbox: [113.8, 0.8, 114.2, 1.2],
+        },
+        "Kruger National Park, South Africa": {
+          coordinates: [-23.98, 31.55],
+          bbox: [31.35, -24.18, 31.75, -23.78],
+        },
+        "Yellowstone National Park, USA": {
+          coordinates: [44.42, -110.58],
+          bbox: [-110.78, 44.22, -110.38, 44.62],
+        },
+        "Galápagos Islands, Ecuador": {
+          coordinates: [-0.95, -90.96],
+          bbox: [-91.16, -1.15, -90.76, -0.75],
+        },
+        "Daintree Rainforest, Australia": {
+          coordinates: [-16.17, 145.42],
+          bbox: [145.22, -16.37, 145.62, -15.97],
+        },
+        "Valdivian Rainforest, Chile": {
+          coordinates: [-39.88, -73.24],
+          bbox: [-73.44, -40.08, -73.04, -39.68],
+        },
+        "Kinabalu Park, Malaysia": {
+          coordinates: [6.07, 116.54],
+          bbox: [116.34, 5.87, 116.74, 6.27],
+        },
+        "Sumatra, Indonesia": {
+          coordinates: [0.58, 101.34],
+          bbox: [101.14, 0.38, 101.54, 0.78],
+        },
+        "New Guinea": {
+          coordinates: [-5.5, 141.5],
+          bbox: [141.3, -5.7, 141.7, -5.3],
+        },
+        Madagascar: {
+          coordinates: [-18.9, 47.5],
+          bbox: [47.3, -19.1, 47.7, -18.7],
+        },
+      };
+
+      // Default watchlist items (these will always remain)
+      const defaultWatchlistItems = [
+        "Amazonas, Brazil",
+        "Congo Basin, DRC",
+        "Borneo, Indonesia",
+      ];
+
+      // Simple in-memory storage for now
+      let userWatchlistItems = [];
 
       function showAnalysisPopup() {
         const overlay = document.getElementById("popupOverlay");
         const popup = document.getElementById("analysisPopup");
 
-        // Show popup
         overlay.classList.add("show");
         popup.classList.add("show");
 
-        // Reset progress bar animation
         const progressBar = popup.querySelector(".popup-progress-bar");
         progressBar.style.animation = "none";
-        progressBar.offsetHeight; // Trigger reflow
+        progressBar.offsetHeight;
         progressBar.style.animation = "progressCountdown 5s linear forwards";
 
-        // Auto hide after 5 seconds
         popupTimeout = setTimeout(() => {
           hideAnalysisPopup();
         }, 5000);
@@ -244,17 +618,167 @@
         overlay.classList.remove("show");
         popup.classList.remove("show");
 
-        // Clear timeout if manually closed
         if (popupTimeout) {
           clearTimeout(popupTimeout);
           popupTimeout = null;
         }
       }
 
-      // Close popup when clicking overlay
-      document
-        .getElementById("popupOverlay")
-        .addEventListener("click", hideAnalysisPopup);
+      // Add Location Dialog Functions
+      function showAddLocationDialog() {
+        console.log("showAddLocationDialog called");
+        const overlay = document.getElementById("popupOverlay");
+        const popup = document.getElementById("addLocationPopup");
+
+        if (!overlay || !popup) {
+          console.error("Dialog elements not found");
+          return;
+        }
+
+        // Reset selections
+        selectedLocations.clear();
+        updateOkButtonState();
+
+        // Populate available locations
+        populateAvailableLocations();
+
+        overlay.classList.add("show");
+        popup.classList.add("show");
+      }
+
+      function hideAddLocationDialog() {
+        const overlay = document.getElementById("popupOverlay");
+        const popup = document.getElementById("addLocationPopup");
+
+        overlay.classList.remove("show");
+        popup.classList.remove("show");
+
+        // Clear selections
+        selectedLocations.clear();
+      }
+
+      function populateAvailableLocations() {
+        const locationsGrid = document.getElementById("locationsGrid");
+        locationsGrid.innerHTML = "";
+
+        // Get currently added locations to exclude them
+        const currentWatchlist = getCurrentWatchlistNames();
+
+        Object.keys(availableLocations).forEach((locationName) => {
+          // Skip if already in watchlist
+          if (currentWatchlist.includes(locationName)) {
+            return;
+          }
+
+          const locationDiv = document.createElement("div");
+          locationDiv.className = "location-option";
+          locationDiv.onclick = () =>
+            toggleLocationSelection(locationName, locationDiv);
+
+          locationDiv.innerHTML = `
+            <div class="location-name">${locationName}</div>
+            <div class="location-check"></div>
+          `;
+
+          locationsGrid.appendChild(locationDiv);
+        });
+      }
+
+      function getCurrentWatchlistNames() {
+        const watchlistItems = document.querySelectorAll(
+          ".watchlist-item .watchlist-text"
+        );
+        return Array.from(watchlistItems).map((item) => item.textContent);
+      }
+
+      function toggleLocationSelection(locationName, element) {
+        if (selectedLocations.has(locationName)) {
+          selectedLocations.delete(locationName);
+          element.classList.remove("selected");
+        } else {
+          selectedLocations.add(locationName);
+          element.classList.add("selected");
+        }
+        updateOkButtonState();
+      }
+
+      function updateOkButtonState() {
+        const okButton = document.getElementById("okButton");
+        okButton.disabled = selectedLocations.size === 0;
+      }
+
+      function addSelectedLocations() {
+        const watchlistGrid = document.getElementById("watchlistGrid");
+
+        selectedLocations.forEach((locationName) => {
+          const locationData = availableLocations[locationName];
+          if (locationData) {
+            // Create new watchlist item
+            const newItem = document.createElement("div");
+            newItem.className = "watchlist-item";
+            newItem.onclick = () =>
+              selectWatchlistItem(newItem, locationData.bbox);
+
+            newItem.innerHTML = `
+              <div class="watchlist-content">
+                <div class="watchlist-icon"></div>
+                <div class="watchlist-text">${locationName}</div>
+              </div>
+              <div class="arrow"></div>
+            `;
+
+            watchlistGrid.appendChild(newItem);
+
+            // Add to memory
+            userWatchlistItems.push({
+              name: locationName,
+              bbox: locationData.bbox,
+            });
+          }
+        });
+
+        hideAddLocationDialog();
+        console.log("Added locations:", Array.from(selectedLocations));
+      }
+
+      // Load saved watchlist items on page load
+      function loadSavedWatchlistItems() {
+        const watchlistGrid = document.getElementById("watchlistGrid");
+
+        userWatchlistItems.forEach((item) => {
+          const newItem = document.createElement("div");
+          newItem.className = "watchlist-item";
+          newItem.onclick = () => selectWatchlistItem(newItem, item.bbox);
+
+          newItem.innerHTML = `
+            <div class="watchlist-content">
+              <div class="watchlist-icon"></div>
+              <div class="watchlist-text">${item.name}</div>
+            </div>
+            <div class="arrow"></div>
+          `;
+
+          watchlistGrid.appendChild(newItem);
+        });
+      }
+
+      // Close dialog when clicking overlay
+      document.addEventListener("DOMContentLoaded", function () {
+        document
+          .getElementById("popupOverlay")
+          .addEventListener("click", (e) => {
+            if (e.target === document.getElementById("popupOverlay")) {
+              hideAnalysisPopup();
+              hideAddLocationDialog();
+            }
+          });
+
+        initializeMap();
+        loadSavedWatchlistItems();
+        console.log(
+          "Environmental Dashboard loaded - select a region to begin analysis"
+        );
+      });
 
       // Navigation Functions
       function goBack() {
@@ -262,13 +786,7 @@
         window.history.back();
       }
 
-      // Watchlist Functions
-      function addToWatchlist() {
-        console.log("Adding to watchlist...");
-      }
-
       function selectWatchlistItem(element, bbox) {
-        // Remove active class from all watchlist items
         document.querySelectorAll(".watchlist-item").forEach((item) => {
           item.classList.remove("active");
           const icon = item.querySelector(".watchlist-icon");
@@ -277,7 +795,6 @@
           }
         });
 
-        // Add active class to clicked item
         element.classList.add("active");
         const icon = element.querySelector(".watchlist-icon");
         if (icon) {
@@ -294,7 +811,6 @@
           calculateAreaFromBbox(bbox)
         );
 
-        // Zoom to the selected region
         const bounds = [
           [bbox[1], bbox[0]],
           [bbox[3], bbox[2]],
@@ -302,31 +818,21 @@
         map.fitBounds(bounds);
       }
 
-      // Calculate approximate area in hectares from bounding box
       function calculateAreaFromBbox(bbox) {
         const [minLon, minLat, maxLon, maxLat] = bbox;
-
-        // Convert degrees to approximate kilometers (rough calculation)
         const latDiff = maxLat - minLat;
         const lonDiff = maxLon - minLon;
-
-        // 1 degree latitude ≈ 111 km
-        // 1 degree longitude varies by latitude, but roughly 111 * cos(latitude)
         const avgLat = (minLat + maxLat) / 2;
         const latKm = latDiff * 111;
         const lonKm = lonDiff * 111 * Math.cos((avgLat * Math.PI) / 180);
-
         const areaKm2 = latKm * lonKm;
-        const areaHectares = areaKm2 * 100; // 1 km² = 100 hectares
-
+        const areaHectares = areaKm2 * 100;
         return Math.round(areaHectares);
       }
 
-      // Initialize map
       function initializeMap() {
         map = L.map("map").setView([0, 0], 2);
 
-        // Satellite tile layer (Esri World Imagery)
         L.tileLayer(
           "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
           {
@@ -337,7 +843,6 @@
         ).addTo(map);
       }
 
-      // API Functions
       async function analyzeDeforestation(bbox) {
         const loadingDiv = document.getElementById("loading");
         loadingDiv.style.display = "block";
@@ -391,7 +896,6 @@
         } catch (error) {
           console.error("Error analyzing deforestation:", error);
 
-          // More specific error messages
           if (error.message.includes("Failed to fetch")) {
             alert(
               "Network error: Unable to reach the server. Please check your internet connection and try again."
@@ -409,7 +913,6 @@
       }
 
       function displayAlerts(alerts) {
-        // Clear existing markers
         alertMarkers.forEach((marker) => map.removeLayer(marker));
         alertMarkers = [];
 
@@ -421,7 +924,6 @@
         alerts.forEach((alert) => {
           const color = getSeverityColor(alert.severity);
 
-          // Create custom icon
           const alertIcon = L.divIcon({
             className: "alert-marker",
             html: `<div style="
@@ -440,12 +942,10 @@
             icon: alertIcon,
           }).addTo(map);
 
-          // Add click event to show modal with images
           marker.on("click", () => {
             showImageModal(alert);
           });
 
-          // Add tooltip
           marker.bindTooltip(`
             <strong>Severity:</strong> ${alert.severity}<br>
             <strong>Change:</strong> ${alert.change}<br>
@@ -463,22 +963,21 @@
       function getSeverityColor(severity) {
         switch (severity.toLowerCase()) {
           case "critical":
-            return "#e74c3c"; // Red
+            return "#e74c3c";
           case "moderate":
-            return "#f39c12"; // Orange/Yellow
+            return "#f39c12";
           case "low":
-            return "#f1c40f"; // Yellow
+            return "#f1c40f";
           case "normal":
-            return "#27ae60"; // Green
+            return "#27ae60";
           default:
-            return "#95a5a6"; // Gray
+            return "#95a5a6";
         }
       }
 
       function showImageModal(alert) {
         if (!currentApiData) return;
 
-        // Set images in modal
         document.getElementById("beforeTrueColor").src =
           currentApiData.past.trueColor;
         document.getElementById("beforeNDVI").src = currentApiData.past.ndvi;
@@ -486,7 +985,6 @@
           currentApiData.today.trueColor;
         document.getElementById("afterNDVI").src = currentApiData.today.ndvi;
 
-        // Show modal
         document.getElementById("imageModal").style.display = "block";
       }
 
@@ -502,7 +1000,6 @@
         analyzeDeforestation(currentBbox);
       }
 
-      // Map view toggle (simplified)
       function setMapView(view) {
         document.querySelectorAll(".map-btn").forEach((btn) => {
           if (btn.textContent.trim() === "Satellite") {
@@ -517,7 +1014,6 @@
         console.log("Map view changed to:", view);
       }
 
-      // Dashboard action functions
       function analyzeRegion() {
         console.log("Analyze new region clicked");
         if (currentBbox) {
@@ -530,7 +1026,6 @@
       function viewAlerts() {
         console.log("View all alerts clicked");
         if (alertMarkers.length > 0) {
-          // Fit map to show all alert markers
           const group = new L.featureGroup(alertMarkers);
           map.fitBounds(group.getBounds());
         } else {
@@ -556,7 +1051,6 @@ Time Range: ${currentApiData.analysis.timeRange.recent}
         }
       }
 
-      // Close modal when clicking outside
       window.onclick = function (event) {
         const modal = document.getElementById("imageModal");
         if (event.target == modal) {
@@ -565,222 +1059,7 @@ Time Range: ${currentApiData.analysis.timeRange.recent}
       };
 
       // Initialize
-      document.addEventListener("DOMContentLoaded", function () {
-        initializeMap();
-        // No default region selected - user must choose
-        console.log(
-          "Environmental Dashboard loaded - select a region to begin analysis"
-        );
-      });
+      // Removed duplicate DOMContentLoaded - already handled above
     </script>
-
-    <style>
-      /* Modal styles */
-      .modal {
-        position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.8);
-      }
-
-      .modal-content {
-        background-color: #2c3e50;
-        margin: 2% auto;
-        padding: 20px;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 800px;
-        color: white;
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-
-      .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-
-      .close:hover,
-      .close:focus {
-        color: white;
-        text-decoration: none;
-      }
-
-      .image-section {
-        margin: 20px 0;
-      }
-
-      .image-row {
-        display: flex;
-        gap: 20px;
-        justify-content: space-around;
-        flex-wrap: wrap;
-      }
-
-      .image-container {
-        text-align: center;
-        flex: 1;
-        min-width: 300px;
-      }
-
-      .image-container img {
-        width: 100%;
-        max-width: 350px;
-        height: auto;
-        border-radius: 8px;
-        border: 2px solid #34495e;
-      }
-
-      .image-container h4 {
-        margin-bottom: 10px;
-        color: #ecf0f1;
-      }
-
-      .image-section h3 {
-        color: #3498db;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 5px;
-        margin-bottom: 15px;
-      }
-
-      /* Alert marker styles */
-      .alert-marker {
-        background: none !important;
-        border: none !important;
-      }
-
-      /* Loading overlay */
-      #loading {
-        font-size: 16px;
-        font-weight: bold;
-      }
-
-      /* Map container positioning for overlay */
-      .map-container {
-        position: relative;
-      }
-      .analysis-popup {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 400px;
-        padding: 30px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        z-index: 1001;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        text-align: center;
-      }
-
-      .analysis-popup.show {
-        opacity: 1;
-        visibility: visible;
-      }
-
-      .popup-progress {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        right: 15px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 2px;
-        overflow: hidden;
-      }
-
-      .popup-progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg, #27ae60, #2ecc71);
-        border-radius: 2px;
-        width: 100%;
-        animation: progressCountdown 5s linear forwards;
-      }
-
-      @keyframes progressCountdown {
-        from {
-          width: 100%;
-        }
-        to {
-          width: 0%;
-        }
-      }
-
-      .popup-close {
-        position: absolute;
-        top: 20px;
-        right: 25px;
-        background: none;
-        border: none;
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 24px;
-        cursor: pointer;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: all 0.2s ease;
-      }
-
-      .popup-close:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 1);
-      }
-
-      .popup-content {
-        margin-top: 20px;
-      }
-
-      .popup-image {
-        width: 300px;
-        height: 300px;
-        border-radius: 20px;
-        margin: 0 auto 20px;
-        display: block;
-        object-fit: cover;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-      }
-
-      .popup-text {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 16px;
-        font-weight: 500;
-        margin: 0;
-        line-height: 1.4;
-      }
-
-      .popup-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-      }
-
-      .popup-overlay.show {
-        opacity: 1;
-        visibility: visible;
-      }
-    </style>
   </body>
 </html>
