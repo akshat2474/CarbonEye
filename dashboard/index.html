@@ -253,6 +253,89 @@
         opacity: 1;
         visibility: visible;
       }
+
+      /* Glassmorphism style for image modal */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1002;
+        background: rgba(0, 0, 0, 0.3);
+      }
+      .modal-content {
+        width: 900px;
+        max-width: 98vw;
+        padding: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        color: white;
+        position: relative;
+        text-align: center;
+      }
+      .modal-content h2,
+      .modal-content h3,
+      .modal-content h4,
+      .modal-content p {
+        color: rgba(255, 255, 255, 0.9);
+      }
+      .modal-content .close {
+        position: absolute;
+        top: 20px;
+        right: 25px;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 24px;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+      }
+      .modal-content .close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 1);
+      }
+      .comparison-container {
+        margin-top: 20px;
+      }
+      .image-section {
+        margin-bottom: 30px;
+      }
+      .image-row {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+      }
+      .image-container {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 16px;
+        width: 200px;
+        box-sizing: border-box;
+      }
+      .image-container img {
+        width: 100%;
+        height: 240px;
+        object-fit: contain;
+        border-radius: 10px;
+        border: 2px solid rgba(255,255,255,0.15);
+        background: rgba(0,0,0,0.1);
+        display: block;
+      }
     </style>
   </head>
   <body>
@@ -408,20 +491,6 @@
 
         <div class="comparison-container">
           <div class="image-section">
-            <h3>NDVI Analysis</h3>
-            <div class="image-row">
-              <div class="image-container">
-                <h4>Before (15 Days Ago)</h4>
-                <img id="beforeNDVI" src="" alt="Before NDVI" />
-              </div>
-              <div class="image-container">
-                <h4>After (Today)</h4>
-                <img id="afterNDVI" src="" alt="After NDVI" />
-              </div>
-            </div>
-          </div>
-
-          <div class="image-section">
             <h3>True Color</h3>
             <div class="image-row">
               <div class="image-container">
@@ -431,6 +500,19 @@
               <div class="image-container">
                 <h4>After (Today)</h4>
                 <img id="afterTrueColor" src="" alt="After True Color" />
+              </div>
+            </div>
+          </div>
+          <div class="image-section">
+            <h3>NDVI Analysis</h3>
+            <div class="image-row">
+              <div class="image-container">
+                <h4>Before (15 Days Ago)</h4>
+                <img id="beforeNDVI" src="" alt="Before NDVI" />
+              </div>
+              <div class="image-container">
+                <h4>After (Today)</h4>
+                <img id="afterNDVI" src="" alt="After NDVI" />
               </div>
             </div>
           </div>
