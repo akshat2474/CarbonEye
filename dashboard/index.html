@@ -491,6 +491,7 @@
       let currentApiData = null;
       let popupTimeout;
       let selectedLocations = new Set();
+      let hasShownAnalysisPopup = false;
 
       // Available locations data converted from Flutter format
       const availableLocations = {
@@ -578,7 +579,7 @@
           coordinates: [-5.5, 141.5],
           bbox: [141.3, -5.7, 141.7, -5.3],
         },
-        Madagascar: {
+        "Madagascar": {
           coordinates: [-18.9, 47.5],
           bbox: [47.3, -19.1, 47.7, -18.7],
         },
@@ -851,8 +852,6 @@
         console.log("Estimated area:", calculateAreaFromBbox(bbox), "hectares");
 
         try {
-          showAnalysisPopup();
-
           const requestBody = { bbox: bbox };
           console.log("Request body:", JSON.stringify(requestBody));
 
@@ -887,11 +886,19 @@
           if (data.alerts && data.alerts.length > 0) {
             displayAlerts(data.alerts);
             console.log("Analysis complete:", data.analysis);
+            if (!hasShownAnalysisPopup) {
+              showAnalysisPopup();
+              hasShownAnalysisPopup = true;
+            }
           } else {
             console.log("No alerts found in the response");
             alert(
               "Analysis completed but no deforestation alerts were found in this region."
             );
+            if (!hasShownAnalysisPopup) {
+              showAnalysisPopup();
+              hasShownAnalysisPopup = true;
+            }
           }
         } catch (error) {
           console.error("Error analyzing deforestation:", error);
