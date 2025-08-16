@@ -39,7 +39,7 @@ const Navbar = ({ onNavigate }: NavbarProps) => {
               The Team
             </button>
             <Button 
-              onClick={() => window.location.href = 'dashboard/index.html'}
+              onClick={() => window.location.href = '/dashboard/index.html'}
               variant="default"
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
