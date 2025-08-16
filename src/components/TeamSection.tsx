@@ -5,7 +5,6 @@ import { Github, Linkedin } from "lucide-react";
 
 interface TeamMember {
   name: string;
-  role?: string; // Optional role field
   login: string;
   avatar_url: string;
   githubUrl: string;
@@ -20,17 +19,64 @@ const TeamSection = () => {
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
-        const res = await fetch("/api/team");
-        
-        if (!res.ok) {
-          throw new Error(`Failed to fetch team data: ${res.status}`);
-        }
-        
-        const data = await res.json();
-        setTeamMembers(data);
+        // Define your team configuration
+        const teamConfig = [
+          {
+            githubUsername: "GithubAnant",
+            linkedinUrl: "https://www.linkedin.com/in/anantsinghal1/"
+          },
+          {
+            githubUsername: "Akshat2474",
+            linkedinUrl: "https://www.linkedin.com/in/akshat-singh-48a03b312/"
+          },
+          {
+            githubUsername: "ABHAY-SINGH-CODER",
+            linkedinUrl: "https://www.linkedin.com/in/abhaydilipsingh/"
+          },
+          {
+            githubUsername: "Amaan3073",
+            linkedinUrl: "https://www.linkedin.com/in/amaan-ali-768b32322/"
+          }
+        ];
+
+        // Fetch data from GitHub API for each member
+        const teamPromises = teamConfig.map(async (member) => {
+          try {
+            // Note: This will use GitHub's public API without authentication
+            // It has rate limits, but should work for small teams
+            const response = await fetch(`https://api.github.com/users/${member.githubUsername}`);
+            
+            if (!response.ok) {
+              throw new Error(`GitHub API error: ${response.status}`);
+            }
+            
+            const userData = await response.json();
+            
+            return {
+              name: userData.name || userData.login,
+              login: userData.login,
+              avatar_url: userData.avatar_url,
+              githubUrl: userData.html_url,
+              linkedinUrl: member.linkedinUrl
+            };
+          } catch (error) {
+            console.error(`Error fetching ${member.githubUsername}:`, error);
+            // Return fallback data
+            return {
+              name: member.githubUsername,
+              login: member.githubUsername,
+              avatar_url: `https://github.com/${member.githubUsername}.png`,
+              githubUrl: `https://github.com/${member.githubUsername}`,
+              linkedinUrl: member.linkedinUrl
+            };
+          }
+        });
+
+        const members = await Promise.all(teamPromises);
+        setTeamMembers(members);
       } catch (error) {
         console.error("Error fetching team members:", error);
-        setError(error instanceof Error ? error.message : "Failed to fetch team data");
+        setError("Failed to load team data");
       } finally {
         setLoading(false);
       }
@@ -70,7 +116,6 @@ const TeamSection = () => {
               <div key={index} className="text-center animate-pulse">
                 <div className="w-32 h-32 bg-muted rounded-full mx-auto mb-4"></div>
                 <div className="h-6 bg-muted rounded w-24 mx-auto mb-2"></div>
-                <div className="h-4 bg-muted rounded w-20 mx-auto mb-4"></div>
                 <div className="flex justify-center gap-2">
                   <div className="w-6 h-6 bg-muted rounded"></div>
                   <div className="w-6 h-6 bg-muted rounded"></div>
@@ -103,13 +148,7 @@ const TeamSection = () => {
                   {member.name}
                 </h3>
 
-                {member.role && (
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {member.role}
-                  </p>
-                )}
-
-                <div className="flex justify-center gap-3">
+                <div className="flex justify-center gap-3 mt-4">
                   <a
                     href={member.githubUrl}
                     target="_blank"
