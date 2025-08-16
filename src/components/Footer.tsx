@@ -11,7 +11,7 @@ const Footer = () => {
               Carbon Eye
             </h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Real-time deforestation monitoring powered by MRV-grade AI
+              Real-time deforestation monitoring powered by AI
               technology.
             </p>
           </div>

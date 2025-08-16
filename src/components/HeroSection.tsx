@@ -21,7 +21,7 @@ const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
       {/* Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
         <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white animate-fade-in">
-          Real-Time Deforestation Alerts, Powered by MRV-Grade AI
+          Real-Time Deforestation Alerts, Powered by AI
         </h1>
         
         <p className="text-xl md:text-2xl text-white/80 mb-12 max-w-2xl mx-auto animate-slide-up">
