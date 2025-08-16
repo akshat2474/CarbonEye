@@ -33,13 +33,13 @@ const Navbar = ({ onNavigate }: NavbarProps) => {
               Features
             </button>
             <button 
-              onClick={() => onNavigate('about')}
+              onClick={() => onNavigate('team')}
               className="text-foreground hover:text-primary transition-colors"
             >
-              About
+              The Team
             </button>
             <Button 
-              onClick={() => onNavigate('dashboard')}
+              onClick={() => window.location.href = 'dashboard/index.html'}
               variant="default"
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >

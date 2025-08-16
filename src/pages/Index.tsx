@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import KeyFeaturesSection from "@/components/KeyFeaturesSection";
+import TeamSection from "@/components/TeamSection";
 import FinalCtaSection from "@/components/FinalCtaSection";
 import Footer from "@/components/Footer";
 import SignupModal from "@/components/SignupModal";
@@ -32,10 +33,14 @@ const Index = () => {
         <KeyFeaturesSection />
       </div>
       
+      <div id="team">
+        <TeamSection />
+      </div>
+      
       <div id="dashboard">
         <FinalCtaSection 
-          onGetStarted={() => setIsSignupOpen(true)}
-          onRequestDemo={() => setIsSignupOpen(true)}
+          onGetStarted={() => window.location.href = 'dashboard/index.html'}
+          onWatchDemo={() => setIsSignupOpen(true)}
         />
       </div>
       

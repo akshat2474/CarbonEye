@@ -2,10 +2,10 @@ import { Button } from "@/components/ui/button";
 
 interface FinalCtaSectionProps {
   onGetStarted: () => void;
-  onRequestDemo: () => void;
+  onWatchDemo: () => void;
 }
 
-const FinalCtaSection = ({ onGetStarted, onRequestDemo }: FinalCtaSectionProps) => {
+const FinalCtaSection = ({ onGetStarted, onWatchDemo }: FinalCtaSectionProps) => {
   return (
     <section className="py-20 px-6 bg-gradient-card">
       <div className="max-w-4xl mx-auto text-center animate-fade-in">
@@ -27,7 +27,7 @@ const FinalCtaSection = ({ onGetStarted, onRequestDemo }: FinalCtaSectionProps) 
           </Button>
           
           <Button 
-            onClick={onRequestDemo}
+            onClick={onWatchDemo}
             size="lg"
             variant="outline"
             className="text-lg px-8 py-6 border-primary/30 hover:bg-primary/10 hover:scale-105 transition-all duration-300"

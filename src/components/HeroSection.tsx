@@ -29,7 +29,7 @@ const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
         </p>
         
         <Button 
-          onClick={onCtaClick}
+          onClick={() => window.location.href = 'dashboard/index.html'}
           size="lg"
           className="text-lg px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 animate-scale-in hover:scale-105"
         >

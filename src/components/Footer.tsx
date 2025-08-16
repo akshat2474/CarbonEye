@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="bg-secondary py-16 px-6 animate-fade-in">
       <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-4 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 gap-8 mb-12">
           {/* Brand */}
           <div className="col-span-1">
             <h3 className="text-2xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
@@ -15,33 +15,13 @@ const Footer = () => {
             </p>
           </div>
           
-          {/* Links */}
-          <div className="col-span-1">
-            <h4 className="font-semibold mb-4">Product</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">About</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Features</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Pricing</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Documentation</a></li>
-            </ul>
-          </div>
-          
+          {/* Resources */}
           <div className="col-span-1">
             <h4 className="font-semibold mb-4">Resources</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">API Docs</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">GitHub</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Support</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Status</a></li>
-            </ul>
-          </div>
-          
-          <div className="col-span-1">
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Privacy Policy</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Terms of Service</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Contact</a></li>
+              <li><a href="https://github.com/akshat2474/CarbonEye/blob/main/README.md" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Readme</a></li>
+              <li><a href="https://github.com/akshat2474/CarbonEye/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">GitHub</a></li>
+              <li><a href="mailto:anantsinghal444@gmail.com" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Contact</a></li>
             </ul>
           </div>
         </div>
