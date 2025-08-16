@@ -39,11 +39,11 @@ const Navbar = ({ onNavigate }: NavbarProps) => {
               About
             </button>
             <Button 
-              onClick={() => onNavigate('contact')}
+              onClick={() => onNavigate('dashboard')}
               variant="default"
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Contact
+              Dashboard
             </Button>
           </div>
         </div>

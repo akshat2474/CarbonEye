@@ -20,18 +20,18 @@ const HeroSection = ({ onCtaClick }: HeroSectionProps) => {
       
       {/* Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white">
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white animate-fade-in">
           Real-Time Deforestation Alerts, Powered by MRV-Grade AI
         </h1>
         
-        <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">
+        <p className="text-xl md:text-2xl text-white/80 mb-12 max-w-2xl mx-auto animate-slide-up">
           Pick any country. See forest loss in the last 5–10 days.
         </p>
         
         <Button 
           onClick={onCtaClick}
           size="lg"
-          className="text-lg px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300"
+          className="text-lg px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 animate-scale-in hover:scale-105"
         >
           Try Carbon Eye
         </Button>

@@ -3,8 +3,8 @@ import { Shield, FileText, Bell, BarChart3 } from "lucide-react";
 const features = [
   {
     icon: Shield,
-    title: "MRV-Backed Offsets",
-    description: "Audit-ready data that meets international monitoring, reporting, and verification standards."
+    title: "Real Time Tracking",
+    description: "Based on super recent satellite image data for the most current forest monitoring available."
   },
   {
     icon: FileText,
@@ -27,7 +27,7 @@ const KeyFeaturesSection = () => {
   return (
     <section className="py-20 px-6 bg-secondary/10">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Key Features
           </h2>
@@ -38,7 +38,11 @@ const KeyFeaturesSection = () => {
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
-            <div key={index} className="bg-card p-6 rounded-xl border border-border hover:shadow-card transition-all duration-300">
+            <div 
+              key={index} 
+              className="bg-card p-6 rounded-xl border border-border hover:shadow-card transition-all duration-300 animate-scale-in hover:scale-105"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
               <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center mb-4">
                 <feature.icon className="w-6 h-6 text-primary-foreground" />
               </div>

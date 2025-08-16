@@ -1,11 +1,8 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import CountrySelector from "@/components/CountrySelector";
 import HowItWorksSection from "@/components/HowItWorksSection";
-import LiveMapDemo from "@/components/LiveMapDemo";
 import KeyFeaturesSection from "@/components/KeyFeaturesSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
 import FinalCtaSection from "@/components/FinalCtaSection";
 import Footer from "@/components/Footer";
 import SignupModal from "@/components/SignupModal";
@@ -20,37 +17,22 @@ const Index = () => {
     }
   };
 
-  const handleCountrySelect = (country: string) => {
-    // Scroll to the next section after country selection
-    setTimeout(() => {
-      const element = document.querySelector('[data-section="how-it-works"]');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 500);
-  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar onNavigate={scrollToSection} />
       
-      <HeroSection onCtaClick={() => scrollToSection('country-selector')} />
-      
-      <CountrySelector onCountrySelect={handleCountrySelect} />
+      <HeroSection onCtaClick={() => setIsSignupOpen(true)} />
       
       <div id="how-it-works" data-section="how-it-works">
         <HowItWorksSection />
       </div>
       
-      <LiveMapDemo />
-      
       <div id="features">
         <KeyFeaturesSection />
       </div>
       
-      <TestimonialsSection />
-      
-      <div id="contact">
+      <div id="dashboard">
         <FinalCtaSection 
           onGetStarted={() => setIsSignupOpen(true)}
           onRequestDemo={() => setIsSignupOpen(true)}

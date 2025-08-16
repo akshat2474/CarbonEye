@@ -24,7 +24,7 @@ const HowItWorksSection = () => {
   return (
     <section className="py-20 px-6 bg-secondary/20">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             How It Works
           </h2>
@@ -35,8 +35,12 @@ const HowItWorksSection = () => {
         
         <div className="grid md:grid-cols-3 gap-8">
           {steps.map((step, index) => (
-            <div key={index} className="text-center group">
-              <div className="w-24 h-24 mx-auto mb-6 p-4 bg-gradient-card rounded-2xl group-hover:shadow-glow transition-all duration-300">
+            <div 
+              key={index} 
+              className="text-center group animate-slide-up"
+              style={{ animationDelay: `${index * 0.2}s` }}
+            >
+              <div className="w-24 h-24 mx-auto mb-6 p-4 bg-gradient-card rounded-2xl group-hover:shadow-glow transition-all duration-300 hover:scale-110">
                 <img 
                   src={step.icon} 
                   alt={step.title}
