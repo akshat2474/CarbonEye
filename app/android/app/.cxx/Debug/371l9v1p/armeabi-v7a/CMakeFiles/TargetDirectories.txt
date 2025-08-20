@@ -1,0 +1,2 @@
+/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/.cxx/Debug/371l9v1p/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/akshat/Desktop/Apps/carbon_eye/app/android/app/.cxx/Debug/371l9v1p/armeabi-v7a/CMakeFiles/rebuild_cache.dir
